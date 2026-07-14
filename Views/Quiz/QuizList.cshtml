@@ -1,0 +1,60 @@
+﻿@model IEnumerable<quizportal.Models.QuizInfo>
+
+@{
+    ViewData["Title"] = "Quiz List";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between mb-3">
+        <h2>Quiz List</h2>
+    </div>
+
+    <table class="table table-bordered table-hover">
+
+        <thead class="table-dark">
+
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Questions</th>
+                <th>Marks</th>
+                <th>Time</th>
+                <th width="250">Actions</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            @foreach (var quiz in Model)
+            {
+                <tr onclick="location.href='/Quiz/Details/@quiz.QuizID'"
+                    style="cursor:pointer;">
+
+                    <td>@quiz.QuizID</td>
+
+                    <td>
+                        <strong>@quiz.Title</strong>
+                    </td>
+
+                    <td>@quiz.NoOfQuestions</td>
+
+                    <td>@quiz.TotalMarks</td>
+
+                    <td>@quiz.TimeLimit mins</td>
+
+                    <td onclick="event.stopPropagation();">
+
+                        <a href="/Quiz/Details/@quiz.QuizID" class="btn btn-info btn-sm">Details</a>
+                        <a href="/Quiz/Edit/@quiz.QuizID" class="btn btn-warning btn-sm">Edit</a>
+                        <a href="/Quiz/Delete/@quiz.QuizID" class="btn btn-danger btn-sm">Delete</a>
+                    </td>
+                </tr>
+            }
+
+        </tbody>
+
+    </table>
+
+</div>

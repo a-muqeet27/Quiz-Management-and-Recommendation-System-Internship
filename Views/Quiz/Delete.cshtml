@@ -1,0 +1,48 @@
+﻿@model quizportal.Models.QuizInfo
+
+@{
+    ViewData["Title"] = "Delete Quiz";
+}
+
+<div class="container mt-5">
+
+    <div class="card shadow">
+        <div class="card-header bg-danger text-white">
+            <h3>Delete Quiz</h3>
+        </div>
+
+        <div class="card-body">
+            <h5> you sure you want to delete this quiz?</h5>
+            <hr />
+
+            <table class="table table-bordered">
+                <tr>
+                    <th>Title</th>
+                    <td>@Model.Title</td>
+                </tr>
+
+                <tr>
+                    <th>Questions</th>
+                    <td>@Model.NoOfQuestions</td>
+                </tr>
+
+                <tr>
+                    <th>Total Marks</th>
+                    <td>@Model.TotalMarks</td>
+                </tr>
+
+                <tr>
+                    <th>Time Limit</th>
+                    <td>@Model.TimeLimit Minutes</td>
+                </tr>
+
+            </table>
+
+            <form method="post" action="/Quiz/Delete">
+                <input type="hidden" name="id" value="@Model.QuizID" />
+                <button type="submit" class="btn btn-danger">Delete</button>
+                <a href="/Quiz/QuizList" class="btn btn-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
