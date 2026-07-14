@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using quizportal.Data;
 
@@ -11,9 +12,11 @@ using quizportal.Data;
 namespace quizportal.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260714075851_AddQuestionBankSchema")]
+    partial class AddQuestionBankSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,11 +58,11 @@ namespace quizportal.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QuestionId"));
 
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("Difficulty")
                         .HasColumnType("int");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
 
                     b.Property<bool>("IsFavourite")
                         .HasColumnType("bit");
@@ -100,29 +103,11 @@ namespace quizportal.Migrations
                     b.Property<DateTime>("AttemptDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("DifficultyFilter")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsCompleted")
-                        .HasColumnType("bit");
-
                     b.Property<int>("ObtainedMarks")
                         .HasColumnType("int");
 
                     b.Property<double>("Percentage")
                         .HasColumnType("float");
-
-                    b.Property<int?>("QuestionTypeFilter")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("QuizTemplateId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RequestedQuestionCount")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime?>("SavedAt")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -130,15 +115,8 @@ namespace quizportal.Migrations
                     b.Property<int>("SubjectId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TimeLimitMinutes")
-                        .HasColumnType("int");
-
                     b.Property<int>("TimeTaken")
                         .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("TotalMarks")
                         .HasColumnType("int");
@@ -147,8 +125,6 @@ namespace quizportal.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("QuizId");
-
-                    b.HasIndex("QuizTemplateId");
 
                     b.HasIndex("SubjectId");
 
@@ -195,30 +171,6 @@ namespace quizportal.Migrations
                     b.ToTable("QuizAnswers");
                 });
 
-            modelBuilder.Entity("quizportal.Models.QuizAnswerChoice", b =>
-                {
-                    b.Property<int>("QuizAnswerChoiceId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QuizAnswerChoiceId"));
-
-                    b.Property<int>("ChoiceId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("QuizAnswerId")
-                        .HasColumnType("int");
-
-                    b.HasKey("QuizAnswerChoiceId");
-
-                    b.HasIndex("ChoiceId");
-
-                    b.HasIndex("QuizAnswerId", "ChoiceId")
-                        .IsUnique();
-
-                    b.ToTable("QuizAnswerChoices");
-                });
-
             modelBuilder.Entity("quizportal.Models.QuizInfo", b =>
                 {
                     b.Property<int>("QuizID")
@@ -227,19 +179,7 @@ namespace quizportal.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QuizID"));
 
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("DifficultyFilter")
-                        .HasColumnType("int");
-
                     b.Property<int>("NoOfQuestions")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("QuestionTypeFilter")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("SubjectId")
                         .HasColumnType("int");
 
                     b.Property<int>("TimeLimit")
@@ -247,44 +187,14 @@ namespace quizportal.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("TotalMarks")
                         .HasColumnType("int");
 
                     b.HasKey("QuizID");
 
-                    b.HasIndex("SubjectId");
-
                     b.ToTable("QuizInfos");
-                });
-
-            modelBuilder.Entity("quizportal.Models.QuizQuestion", b =>
-                {
-                    b.Property<int>("QuizQuestionId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("QuizQuestionId"));
-
-                    b.Property<int>("DisplayOrder")
-                        .HasColumnType("int");
-
-                    b.Property<int>("QuestionId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("QuizId")
-                        .HasColumnType("int");
-
-                    b.HasKey("QuizQuestionId");
-
-                    b.HasIndex("QuestionId");
-
-                    b.HasIndex("QuizId", "QuestionId")
-                        .IsUnique();
-
-                    b.ToTable("QuizQuestions");
                 });
 
             modelBuilder.Entity("quizportal.Models.Subject", b =>
@@ -294,6 +204,9 @@ namespace quizportal.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubjectId"));
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .HasMaxLength(500)
@@ -308,9 +221,6 @@ namespace quizportal.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("SubjectId");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
 
                     b.ToTable("Subjects");
                 });
@@ -331,7 +241,7 @@ namespace quizportal.Migrations
                     b.HasOne("quizportal.Models.Subject", "Subject")
                         .WithMany("Questions")
                         .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Subject");
@@ -339,18 +249,11 @@ namespace quizportal.Migrations
 
             modelBuilder.Entity("quizportal.Models.Quiz", b =>
                 {
-                    b.HasOne("quizportal.Models.QuizInfo", "QuizTemplate")
-                        .WithMany("QuizAttempts")
-                        .HasForeignKey("QuizTemplateId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("quizportal.Models.Subject", "Subject")
                         .WithMany()
                         .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("QuizTemplate");
 
                     b.Navigation("Subject");
                 });
@@ -371,8 +274,7 @@ namespace quizportal.Migrations
 
                     b.HasOne("quizportal.Models.Choice", "SelectedChoice")
                         .WithMany()
-                        .HasForeignKey("SelectedChoiceId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("SelectedChoiceId");
 
                     b.Navigation("Question");
 
@@ -381,90 +283,21 @@ namespace quizportal.Migrations
                     b.Navigation("SelectedChoice");
                 });
 
-            modelBuilder.Entity("quizportal.Models.QuizAnswerChoice", b =>
-                {
-                    b.HasOne("quizportal.Models.Choice", "Choice")
-                        .WithMany("QuizAnswerChoices")
-                        .HasForeignKey("ChoiceId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("quizportal.Models.QuizAnswer", "QuizAnswer")
-                        .WithMany("SelectedChoices")
-                        .HasForeignKey("QuizAnswerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Choice");
-
-                    b.Navigation("QuizAnswer");
-                });
-
-            modelBuilder.Entity("quizportal.Models.QuizInfo", b =>
-                {
-                    b.HasOne("quizportal.Models.Subject", "Subject")
-                        .WithMany("QuizTemplates")
-                        .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Subject");
-                });
-
-            modelBuilder.Entity("quizportal.Models.QuizQuestion", b =>
-                {
-                    b.HasOne("quizportal.Models.Question", "Question")
-                        .WithMany("QuizQuestions")
-                        .HasForeignKey("QuestionId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("quizportal.Models.Quiz", "Quiz")
-                        .WithMany("QuizQuestions")
-                        .HasForeignKey("QuizId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Question");
-
-                    b.Navigation("Quiz");
-                });
-
-            modelBuilder.Entity("quizportal.Models.Choice", b =>
-                {
-                    b.Navigation("QuizAnswerChoices");
-                });
-
             modelBuilder.Entity("quizportal.Models.Question", b =>
                 {
                     b.Navigation("Choices");
 
                     b.Navigation("QuizAnswers");
-
-                    b.Navigation("QuizQuestions");
                 });
 
             modelBuilder.Entity("quizportal.Models.Quiz", b =>
                 {
                     b.Navigation("QuizAnswers");
-
-                    b.Navigation("QuizQuestions");
-                });
-
-            modelBuilder.Entity("quizportal.Models.QuizAnswer", b =>
-                {
-                    b.Navigation("SelectedChoices");
-                });
-
-            modelBuilder.Entity("quizportal.Models.QuizInfo", b =>
-                {
-                    b.Navigation("QuizAttempts");
                 });
 
             modelBuilder.Entity("quizportal.Models.Subject", b =>
                 {
                     b.Navigation("Questions");
-
-                    b.Navigation("QuizTemplates");
                 });
 #pragma warning restore 612, 618
         }
