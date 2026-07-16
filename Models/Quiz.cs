@@ -1,62 +1,41 @@
-﻿using quizportal.Models.Enums;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.Collections.Generic;
 
-namespace quizportal.Models
+namespace quizportal.Models;
+
+public partial class Quiz
 {
-    /// <summary>
-    /// A saved quiz attempt with scoring and status.
-    /// </summary>
-    public class Quiz
-    {
-        [Key]
-        public int QuizId { get; set; }
+    public int QuizId { get; set; }
 
-        [Required]
-        public int SubjectId { get; set; }
+    public int SubjectId { get; set; }
 
-        [ForeignKey(nameof(SubjectId))]
-        public Subject Subject { get; set; } = null!;
+    public string? Title { get; set; }
 
-        /// <summary>
-        /// Optional link to the quiz template that generated this attempt.
-        /// </summary>
-        public int? QuizTemplateId { get; set; }
+    public int NoOfQuestions { get; set; }
 
-        [ForeignKey(nameof(QuizTemplateId))]
-        public QuizInfo? QuizTemplate { get; set; }
+    public int TimeLimitMinutes { get; set; }
 
-        [StringLength(200)]
-        public string? Title { get; set; }
+    public int TotalMarks { get; set; }
 
-        public DateTime AttemptDate { get; set; } = DateTime.UtcNow;
+    public int? DifficultyFilter { get; set; }
 
-        public DateTime? SavedAt { get; set; }
+    public int? QuestionTypeFilter { get; set; }
 
-        public bool IsCompleted { get; set; }
+    public bool IsActive { get; set; }
 
-        public int RequestedQuestionCount { get; set; }
+    public int? CreatedBy { get; set; }
 
-        public int TotalQuestions { get; set; }
+    public DateTime CreatedDate { get; set; }
 
-        public int TotalMarks { get; set; }
+    public int? TopicId { get; set; }
 
-        public int ObtainedMarks { get; set; }
+    public virtual User? CreatedByNavigation { get; set; }
 
-        public double Percentage { get; set; }
+    public virtual ICollection<QuizAttempt> QuizAttempts { get; set; } = new List<QuizAttempt>();
 
-        public QuizStatus Status { get; set; }
+    public virtual ICollection<QuizQuestion> QuizQuestions { get; set; } = new List<QuizQuestion>();
 
-        public int TimeLimitMinutes { get; set; }
+    public virtual Subject Subject { get; set; } = null!;
 
-        public int TimeTaken { get; set; }
-
-        public DifficultyLevel? DifficultyFilter { get; set; }
-
-        public QuestionType? QuestionTypeFilter { get; set; }
-
-        public ICollection<QuizQuestion> QuizQuestions { get; set; } = new List<QuizQuestion>();
-
-        public ICollection<QuizAnswer> QuizAnswers { get; set; } = new List<QuizAnswer>();
-    }
+    public virtual Topic? Topic { get; set; }
 }

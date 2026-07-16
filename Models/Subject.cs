@@ -1,23 +1,29 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
 
-namespace quizportal.Models
+namespace quizportal.Models;
+
+public partial class Subject
 {
-    public class Subject
-    {
-        [Key]
-        public int SubjectId { get; set; }
+    public int SubjectId { get; set; }
 
-        [Required]
-        [StringLength(100)]
-        public string Name { get; set; } = string.Empty;
+    public string SubjectName { get; set; } = null!;
 
-        [StringLength(500)]
-        public string? Description { get; set; }
+    public string? SubjectDescription { get; set; }
 
-        public bool IsActive { get; set; } = true;
+    public bool IsActive { get; set; }
 
-        public ICollection<Question> Questions { get; set; } = new List<Question>();
+    public int? CreatedBy { get; set; }
 
-        public ICollection<QuizInfo> QuizTemplates { get; set; } = new List<QuizInfo>();
-    }
+    public DateTime CreatedDate { get; set; }
+
+    public DateTime? ModifiedDate { get; set; }
+
+    public virtual User? CreatedByNavigation { get; set; }
+
+    public virtual ICollection<Question> Questions { get; set; } = new List<Question>();
+
+    public virtual ICollection<Quiz> Quizzes { get; set; } = new List<Quiz>();
+
+    public virtual ICollection<Topic> Topics { get; set; } = new List<Topic>();
 }

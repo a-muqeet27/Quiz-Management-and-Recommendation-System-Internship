@@ -1,56 +1,25 @@
-﻿@model quizportal.Models.QuizInfo
-
+﻿@model quizportal.Models.ViewModels.QuizFormViewModel
 @{
     ViewData["Title"] = "Edit Quiz";
 }
 
-<div class="container mt-5">
-
-    <div class="card shadow">
-
-        <div class="card-header bg-warning">
-            <h3>Edit Quiz</h3>
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Edit Quiz</h2>
+            <p class="text-muted mb-0">Update quiz details for <strong>@Model.Title</strong></p>
         </div>
-
-
-        <div class="card-body">
-
-            <form asp-controller="Quiz" asp-action="Edit" method="post">
-
-                <input type="hidden" name="QuizID" value="@Model.QuizID" />
-
-                <div class="mb-3">
-                    <label>Quiz Title</label>
-                    <input type="text" name="Title" value="@Model.Title" class="form-control" required />
-                </div>
-
-
-                <div class="mb-3">
-                    <label>Number of Questions</label>
-                    <input type="number" name="NoOfQuestions" value="@Model.NoOfQuestions" class="form-control" min="1" required />
-                </div>
-
-
-                <div class="mb-3">
-                    <label>Total Marks</label>
-                    <input type="number" name="TotalMarks" value="@Model.TotalMarks" class="form-control" min="1" required />
-                </div>
-
-
-                <div class="mb-3">
-                    <label>Time Limit</label>
-                    <select name="TimeLimit" class="form-select">
-                        <option value="5" selected="@(Model.TimeLimit == 5)">5 Minutes</option>
-                        <option value="10" selected="@(Model.TimeLimit == 10)">10 Minutes</option>
-                        <option value="15" selected="@(Model.TimeLimit == 15)">15 Minutes</option>
-                        <option value="20" selected="@(Model.TimeLimit == 20)">20 Minutes</option>
-                        <option value="30" selected="@(Model.TimeLimit == 30)">30 Minutes</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn btn-success">Save Changes</button>
-                <a href="/Quiz/QuizList" class="btn btn-secondary">Cancel</a>
-            </form>
-        </div>
+        <a asp-action="QuizList" class="btn btn-outline-secondary">Back to List</a>
     </div>
+
+    <form asp-action="Edit" method="post" id="quizForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="QuizId" />
+        <partial name="_QuizFormFields" model="Model" />
+    </form>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/quiz-form.js" asp-append-version="true"></script>
+}

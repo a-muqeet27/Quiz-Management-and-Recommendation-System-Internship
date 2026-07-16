@@ -1,6 +1,6 @@
-﻿@model quizportal.Models.Quiz
+@model quizportal.Models.Topic
 @{
-    ViewData["Title"] = "Delete Quiz";
+    ViewData["Title"] = "Delete Topic";
 }
 
 <div class="container mt-4 mb-5">
@@ -8,23 +8,22 @@
         <div class="col-lg-7">
             <div class="card shadow-sm border-danger">
                 <div class="card-header bg-danger text-white">
-                    <h3 class="mb-0">Delete Quiz</h3>
+                    <h3 class="mb-0">Delete Topic</h3>
                 </div>
                 <div class="card-body p-4">
-                    <p class="fs-5">Are you sure you want to delete this quiz?</p>
+                    <p class="fs-5">Are you sure you want to delete this topic?</p>
 
                     <div class="bg-light rounded p-3 mb-4">
-                        <p class="mb-1"><strong>Title:</strong> @Model.Title</p>
+                        <p class="mb-1"><strong>Topic:</strong> @Model.TopicName</p>
                         <p class="mb-1"><strong>Subject:</strong> @(Model.Subject?.SubjectName ?? "-")</p>
-                        <p class="mb-1"><strong>Questions:</strong> @Model.NoOfQuestions</p>
-                        <p class="mb-0"><strong>Total Marks:</strong> @Model.TotalMarks</p>
+                        <p class="mb-0"><strong>Description:</strong> @(Model.TopicDescription ?? "-")</p>
                     </div>
 
                     <form asp-action="Delete" method="post" class="d-flex gap-2">
                         @Html.AntiForgeryToken()
-                        <input type="hidden" name="id" value="@Model.QuizId" />
+                        <input type="hidden" name="id" value="@Model.TopicId" />
                         <button type="submit" class="btn btn-danger">Delete</button>
-                        <a asp-action="QuizList" class="btn btn-secondary">Cancel</a>
+                        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
                     </form>
                 </div>
             </div>

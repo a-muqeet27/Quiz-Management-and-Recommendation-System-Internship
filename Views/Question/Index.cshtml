@@ -1,0 +1,145 @@
+@model IEnumerable<quizportal.Models.Question>
+@{
+    ViewData["Title"] = "Questions";
+    var subjects = ViewBag.Subjects as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+    var topics = ViewBag.Topics as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+
+    string TypeLabel(int value) => value switch
+    {
+        1 => "Multiple Choice",
+        2 => "True / False",
+        3 => "Multiple Answer",
+        _ => "Unknown"
+    };
+
+    string DifficultyLabel(int value) => value switch
+    {
+        1 => "Easy",
+        2 => "Medium",
+        3 => "Hard",
+        _ => "Unknown"
+    };
+}
+
+<div class="container mt-4 mb-5">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h2 class="mb-1">Questions</h2>
+            <p class="text-muted mb-0">Question bank linked to subjects and topics</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary">+ Create Question</a>
+    </div>
+
+    <form method="get" asp-action="Index" class="row g-2 align-items-end mb-4">
+        <div class="col-md-4">
+            <label class="form-label fw-semibold">Subject</label>
+            <select name="subjectId" id="filterSubjectId" class="form-select" onchange="this.form.submit()">
+                @foreach (var item in subjects)
+                {
+                    if (item.Selected)
+                    {
+                        <option value="@item.Value" selected>@item.Text</option>
+                    }
+                    else
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label fw-semibold">Topic</label>
+            <select name="topicId" id="filterTopicId" class="form-select" onchange="this.form.submit()">
+                @foreach (var item in topics)
+                {
+                    if (item.Selected)
+                    {
+                        <option value="@item.Value" selected>@item.Text</option>
+                    }
+                    else
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-auto">
+            <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        </div>
+    </form>
+
+    @if (!Model.Any())
+    {
+        <div class="card shadow-sm text-center p-5">
+            <h4>No questions yet</h4>
+            <p class="text-muted">Create subjects and topics first, then add questions.</p>
+            <a asp-action="Create" class="btn btn-primary">Create Question</a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Question</th>
+                        <th>Subject</th>
+                        <th>Topic</th>
+                        <th>Type</th>
+                        <th>Difficulty</th>
+                        <th>Score</th>
+                        <th>Choices</th>
+                        <th>Status</th>
+                        <th width="220">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var question in Model)
+                    {
+                        <tr>
+                            <td>@question.QuestionId</td>
+                            <td class="text-start">
+                                @(question.QuestionStatement.Length > 80
+                                    ? question.QuestionStatement[..80] + "..."
+                                    : question.QuestionStatement)
+                            </td>
+                            <td>@(question.Subject?.SubjectName ?? "-")</td>
+                            <td>@(question.Topic?.TopicName ?? "Any")</td>
+                            <td>@TypeLabel(question.QuestionType)</td>
+                            <td>@DifficultyLabel(question.Difficulty)</td>
+                            <td>@question.Score</td>
+                            <td>@question.Choices.Count</td>
+                            <td>
+                                <span class="badge @(question.IsActive ? "bg-success" : "bg-secondary")">
+                                    @(question.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@question.QuestionId" class="btn btn-info btn-sm">Details</a>
+                                <a asp-action="Edit" asp-route-id="@question.QuestionId" class="btn btn-warning btn-sm">Edit</a>
+                                <a asp-action="Delete" asp-route-id="@question.QuestionId" class="btn btn-danger btn-sm">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

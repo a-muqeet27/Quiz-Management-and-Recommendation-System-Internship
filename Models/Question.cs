@@ -1,44 +1,45 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using quizportal.Models.Enums;
+﻿using System;
+using System.Collections.Generic;
 
-namespace quizportal.Models
+namespace quizportal.Models;
+
+public partial class Question
 {
-    public class Question
-    {
-        [Key]
-        public int QuestionId { get; set; }
+    public int QuestionId { get; set; }
 
-        [Required]
-        public int SubjectId { get; set; }
+    public int SubjectId { get; set; }
 
-        [ForeignKey(nameof(SubjectId))]
-        public Subject Subject { get; set; } = null!;
+    public string QuestionStatement { get; set; } = null!;
 
-        [Required]
-        [StringLength(100)]
-        public string Topic { get; set; } = string.Empty;
+    public int QuestionType { get; set; }
 
-        [Required]
-        public string Statement { get; set; } = string.Empty;
+    public int Difficulty { get; set; }
 
-        [Required]
-        public QuestionType QuestionType { get; set; }
+    public int Score { get; set; }
 
-        [Required]
-        public DifficultyLevel Difficulty { get; set; }
+    public bool IsActive { get; set; }
 
-        [Range(1, 10)]
-        public int Score { get; set; }
+    public int? CreatedBy { get; set; }
 
-        public bool IsFavourite { get; set; }
+    public DateTime CreatedDate { get; set; }
 
-        public bool IsActive { get; set; } = true;
+    public DateTime? ModifiedDate { get; set; }
 
-        public ICollection<Choice> Choices { get; set; } = new List<Choice>();
+    public int? TopicId { get; set; }
 
-        public ICollection<QuizQuestion> QuizQuestions { get; set; } = new List<QuizQuestion>();
+    public virtual ICollection<Choice> Choices { get; set; } = new List<Choice>();
 
-        public ICollection<QuizAnswer> QuizAnswers { get; set; } = new List<QuizAnswer>();
-    }
+    public virtual ICollection<Comment> Comments { get; set; } = new List<Comment>();
+
+    public virtual User? CreatedByNavigation { get; set; }
+
+    public virtual ICollection<QuizChoice> QuizChoices { get; set; } = new List<QuizChoice>();
+
+    public virtual ICollection<QuizQuestion> QuizQuestions { get; set; } = new List<QuizQuestion>();
+
+    public virtual Subject Subject { get; set; } = null!;
+
+    public virtual Topic? Topic { get; set; }
+
+    public virtual ICollection<UserFavouriteQuestion> UserFavouriteQuestions { get; set; } = new List<UserFavouriteQuestion>();
 }

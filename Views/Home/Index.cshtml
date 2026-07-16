@@ -15,9 +15,9 @@
         <div class="col-md-4 mb-4">
             <div class="card shadow h-100">
                 <div class="card-body text-center">
-                    <h3>Create Quiz</h3>
-                    <p>Create a New Quiz for Students</p>
-                    <a asp-controller="Quiz" asp-action="Create" class="btn btn-primary">Create Quiz</a>
+                    <h3>Subjects</h3>
+                    <p>Add subjects for quizzes and topics</p>
+                    <a asp-controller="Subject" asp-action="Create" class="btn btn-outline-primary">Create Subject</a>
                 </div>
             </div>
         </div>
@@ -25,13 +25,22 @@
         <div class="col-md-4 mb-4">
             <div class="card shadow h-100">
                 <div class="card-body text-center">
-                    <h3>View Quizzes</h3>
-                    <p>Manage All Created Quizzes</p>
-                    <a asp-controller="Quiz" asp-action="QuizList" class="btn btn-success">View Quizzes</a>
+                    <h3>Topics</h3>
+                    <p>Add topics under a subject</p>
+                    <a asp-controller="Topic" asp-action="Create" class="btn btn-outline-primary">Create Topic</a>
                 </div>
             </div>
         </div>
 
+        <div class="col-md-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-body text-center">
+                    <h3>Questions</h3>
+                    <p>Build your question bank with choices</p>
+                    <a asp-controller="Question" asp-action="Create" class="btn btn-outline-primary">Create Question</a>
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>

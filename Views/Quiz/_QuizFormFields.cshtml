@@ -1,0 +1,179 @@
+@model quizportal.Models.ViewModels.QuizFormViewModel
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+@if (!Model.Subjects.Any(s => !string.IsNullOrEmpty(s.Value)))
+{
+    <div class="alert alert-warning">
+        <strong>No subjects found.</strong>
+        <a asp-controller="Subject" asp-action="Create" class="alert-link">Create a subject</a>
+        first, then optionally
+        <a asp-controller="Topic" asp-action="Create" class="alert-link">add topics</a>
+        before creating a quiz.
+    </div>
+}
+
+<div class="quiz-wizard-steps mb-4">
+    <div class="quiz-step active" data-step="1">
+        <span class="quiz-step-number">1</span>
+        <span class="quiz-step-label">Basic Info</span>
+    </div>
+    <div class="quiz-step" data-step="2">
+        <span class="quiz-step-number">2</span>
+        <span class="quiz-step-label">Settings</span>
+    </div>
+    <div class="quiz-step" data-step="3">
+        <span class="quiz-step-number">3</span>
+        <span class="quiz-step-label">Filters</span>
+    </div>
+    <div class="quiz-step" data-step="4">
+        <span class="quiz-step-number">4</span>
+        <span class="quiz-step-label">Review</span>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm quiz-form-card">
+            <div class="card-body p-4">
+                <div class="quiz-wizard-panel active" data-panel="1">
+                    <h4 class="mb-3">Basic Information</h4>
+                    <p class="text-muted mb-4">Choose where this quiz belongs and give it a title.</p>
+
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label fw-semibold">Quiz Title</label>
+                        <input asp-for="Title" class="form-control" placeholder="e.g. Midterm Physics Quiz" maxlength="200" required />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="SubjectId" class="form-label fw-semibold">Subject</label>
+                        <select asp-for="SubjectId" asp-items="Model.Subjects" class="form-select" id="SubjectId" required></select>
+                        <span asp-validation-for="SubjectId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="TopicId" class="form-label fw-semibold">Topic <span class="text-muted fw-normal">(optional)</span></label>
+                        <select asp-for="TopicId" asp-items="Model.Topics" class="form-select" id="TopicId"></select>
+                        <div class="form-text">Topics load based on the selected subject.</div>
+                    </div>
+                </div>
+
+                <div class="quiz-wizard-panel" data-panel="2">
+                    <h4 class="mb-3">Quiz Settings</h4>
+                    <p class="text-muted mb-4">Define how many questions, marks, and time students get.</p>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="NoOfQuestions" class="form-label fw-semibold">Number of Questions</label>
+                            <input asp-for="NoOfQuestions" type="number" min="1" max="200" class="form-control" id="NoOfQuestions" required />
+                            <span asp-validation-for="NoOfQuestions" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="TotalMarks" class="form-label fw-semibold">Total Marks</label>
+                            <input asp-for="TotalMarks" type="number" min="1" max="1000" class="form-control" id="TotalMarks" required />
+                            <span asp-validation-for="TotalMarks" class="text-danger"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="TimeLimitMinutes" class="form-label fw-semibold">Time Limit (minutes)</label>
+                            <select asp-for="TimeLimitMinutes" class="form-select" id="TimeLimitMinutes">
+                                <option value="5">5 minutes</option>
+                                <option value="10">10 minutes</option>
+                                <option value="15">15 minutes</option>
+                                <option value="20">20 minutes</option>
+                                <option value="30">30 minutes</option>
+                                <option value="45">45 minutes</option>
+                                <option value="60">60 minutes</option>
+                                <option value="90">90 minutes</option>
+                                <option value="120">120 minutes</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 d-flex align-items-end">
+                            <div class="form-check form-switch mb-2">
+                                <input asp-for="IsActive" class="form-check-input" type="checkbox" id="IsActive" />
+                                <label asp-for="IsActive" class="form-check-label fw-semibold">Quiz is active</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quiz-wizard-panel" data-panel="3">
+                    <h4 class="mb-3">Question Filters</h4>
+                    <p class="text-muted mb-4">Optional filters to narrow questions from the question bank.</p>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="DifficultyFilter" class="form-label fw-semibold">Difficulty</label>
+                            <select asp-for="DifficultyFilter" class="form-select" id="DifficultyFilter">
+                                <option value="">Any difficulty</option>
+                                <option value="1">Easy</option>
+                                <option value="2">Medium</option>
+                                <option value="3">Hard</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="QuestionTypeFilter" class="form-label fw-semibold">Question Type</label>
+                            <select asp-for="QuestionTypeFilter" class="form-select" id="QuestionTypeFilter">
+                                <option value="">Any type</option>
+                                <option value="1">Multiple Choice</option>
+                                <option value="2">True / False</option>
+                                <option value="3">Multiple Answer</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info mt-4 mb-0" id="questionBankInfo">
+                        <span id="availableQuestionText">Select a subject to see available questions.</span>
+                    </div>
+                </div>
+
+                <div class="quiz-wizard-panel" data-panel="4">
+                    <h4 class="mb-3">Review &amp; Submit</h4>
+                    <p class="text-muted mb-4">Confirm everything looks correct before saving.</p>
+
+                    <div class="review-grid">
+                        <div><strong>Title</strong><span id="reviewTitle">-</span></div>
+                        <div><strong>Subject</strong><span id="reviewSubject">-</span></div>
+                        <div><strong>Topic</strong><span id="reviewTopic">Any</span></div>
+                        <div><strong>Questions</strong><span id="reviewQuestions">-</span></div>
+                        <div><strong>Total Marks</strong><span id="reviewMarks">-</span></div>
+                        <div><strong>Time Limit</strong><span id="reviewTime">-</span></div>
+                        <div><strong>Difficulty</strong><span id="reviewDifficulty">Any</span></div>
+                        <div><strong>Question Type</strong><span id="reviewType">Any</span></div>
+                        <div><strong>Status</strong><span id="reviewStatus">Active</span></div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-4 pt-3 border-top">
+                    <button type="button" class="btn btn-outline-secondary" id="prevStepBtn" style="visibility:hidden;">Back</button>
+                    <div>
+                        <button type="button" class="btn btn-primary" id="nextStepBtn">Next</button>
+                        <button type="submit" class="btn btn-success d-none" id="submitQuizBtn">Save Quiz</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm quiz-preview-card sticky-top" style="top: 1rem;">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Live Preview</h5>
+            </div>
+            <div class="card-body">
+                <h5 id="previewTitle" class="mb-3">Untitled Quiz</h5>
+                <ul class="list-unstyled quiz-preview-list">
+                    <li><span>Subject</span><strong id="previewSubject">-</strong></li>
+                    <li><span>Topic</span><strong id="previewTopic">Any</strong></li>
+                    <li><span>Questions</span><strong id="previewQuestions">-</strong></li>
+                    <li><span>Marks</span><strong id="previewMarks">-</strong></li>
+                    <li><span>Time</span><strong id="previewTime">-</strong></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

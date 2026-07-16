@@ -1,60 +1,73 @@
-﻿@model IEnumerable<quizportal.Models.QuizInfo>
-
+﻿@model IEnumerable<quizportal.Models.Quiz>
 @{
     ViewData["Title"] = "Quiz List";
 }
 
-<div class="container mt-4">
+<div class="container mt-4 mb-5">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
 
-    <div class="d-flex justify-content-between mb-3">
-        <h2>Quiz List</h2>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Quiz List</h2>
+            <p class="text-muted mb-0">All quizzes from your database</p>
+        </div>
     </div>
 
-    <table class="table table-bordered table-hover">
-
-        <thead class="table-dark">
-
-            <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Questions</th>
-                <th>Marks</th>
-                <th>Time</th>
-                <th width="250">Actions</th>
-            </tr>
-
-        </thead>
-
-        <tbody>
-
-            @foreach (var quiz in Model)
-            {
-                <tr onclick="location.href='/Quiz/Details/@quiz.QuizID'"
-                    style="cursor:pointer;">
-
-                    <td>@quiz.QuizID</td>
-
-                    <td>
-                        <strong>@quiz.Title</strong>
-                    </td>
-
-                    <td>@quiz.NoOfQuestions</td>
-
-                    <td>@quiz.TotalMarks</td>
-
-                    <td>@quiz.TimeLimit mins</td>
-
-                    <td onclick="event.stopPropagation();">
-
-                        <a href="/Quiz/Details/@quiz.QuizID" class="btn btn-info btn-sm">Details</a>
-                        <a href="/Quiz/Edit/@quiz.QuizID" class="btn btn-warning btn-sm">Edit</a>
-                        <a href="/Quiz/Delete/@quiz.QuizID" class="btn btn-danger btn-sm">Delete</a>
-                    </td>
-                </tr>
-            }
-
-        </tbody>
-
-    </table>
-
+    @if (!Model.Any())
+    {
+        <div class="card shadow-sm text-center p-5">
+            <h4>No quizzes yet</h4>
+            <p class="text-muted">Quizzes will appear here once they are created.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Title</th>
+                        <th>Subject</th>
+                        <th>Topic</th>
+                        <th>Questions</th>
+                        <th>Marks</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th width="220">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var quiz in Model)
+                    {
+                        <tr>
+                            <td>@quiz.QuizId</td>
+                            <td class="text-start"><strong>@quiz.Title</strong></td>
+                            <td>@(quiz.Subject?.SubjectName ?? "-")</td>
+                            <td>@(quiz.Topic?.TopicName ?? "Any")</td>
+                            <td>@quiz.NoOfQuestions</td>
+                            <td>@quiz.TotalMarks</td>
+                            <td>@quiz.TimeLimitMinutes min</td>
+                            <td>
+                                <span class="badge @(quiz.IsActive ? "bg-success" : "bg-secondary")">
+                                    @(quiz.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </td>
+                            <td>
+                                <a asp-action="Details" asp-route-id="@quiz.QuizId" class="btn btn-info btn-sm">Details</a>
+                                <a asp-action="Edit" asp-route-id="@quiz.QuizId" class="btn btn-warning btn-sm">Edit</a>
+                                <a asp-action="Delete" asp-route-id="@quiz.QuizId" class="btn btn-danger btn-sm">Delete</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 </div>

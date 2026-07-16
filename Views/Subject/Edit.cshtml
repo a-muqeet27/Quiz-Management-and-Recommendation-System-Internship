@@ -1,0 +1,54 @@
+@model quizportal.Models.Subject
+@{
+    ViewData["Title"] = "Edit Subject";
+}
+
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">Edit Subject</h2>
+                    <p class="text-muted mb-0">Update <strong>@Model.SubjectName</strong></p>
+                </div>
+                <a asp-action="Index" class="btn btn-outline-secondary">Back</a>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="SubjectId" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="SubjectName" class="form-label fw-semibold">Subject Name</label>
+                            <input asp-for="SubjectName" class="form-control" maxlength="100" required />
+                            <span asp-validation-for="SubjectName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="SubjectDescription" class="form-label fw-semibold">Description</label>
+                            <textarea asp-for="SubjectDescription" class="form-control" rows="3" maxlength="500"></textarea>
+                            <span asp-validation-for="SubjectDescription" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-check form-switch mb-4">
+                            <input asp-for="IsActive" class="form-check-input" />
+                            <label asp-for="IsActive" class="form-check-label fw-semibold">Subject is active</label>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success">Save Changes</button>
+                            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

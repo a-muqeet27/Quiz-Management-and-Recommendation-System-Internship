@@ -1,26 +1,19 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.Collections.Generic;
 
-namespace quizportal.Models
+namespace quizportal.Models;
+
+public partial class QuizQuestion
 {
-    
-    public class QuizQuestion
-    {
-        [Key]
-        public int QuizQuestionId { get; set; }
+    public int QuizQuestionId { get; set; }
 
-        [Required]
-        public int QuizId { get; set; }
+    public int QuizId { get; set; }
 
-        [ForeignKey(nameof(QuizId))]
-        public Quiz Quiz { get; set; } = null!;
+    public int QuestionId { get; set; }
 
-        [Required]
-        public int QuestionId { get; set; }
+    public int DisplayOrder { get; set; }
 
-        [ForeignKey(nameof(QuestionId))]
-        public Question Question { get; set; } = null!;
+    public virtual Question Question { get; set; } = null!;
 
-        public int DisplayOrder { get; set; }
-    }
+    public virtual Quiz Quiz { get; set; } = null!;
 }

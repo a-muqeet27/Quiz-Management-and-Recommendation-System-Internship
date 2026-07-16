@@ -1,0 +1,135 @@
+@model quizportal.Models.ViewModels.QuestionFormViewModel
+@{
+    var hasSubjects = ViewBag.HasSubjects as bool? ?? Model.Subjects.Any(s => !string.IsNullOrEmpty(s.Value));
+}
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+@if (!hasSubjects)
+{
+    <div class="alert alert-warning">
+        No subjects found.
+        <a asp-controller="Subject" asp-action="Create" class="alert-link">Create a subject</a> first.
+    </div>
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body p-4">
+        <h5 class="mb-3">Question Details</h5>
+
+        <div class="mb-3">
+            <label asp-for="QuestionStatement" class="form-label fw-semibold">Question Statement</label>
+            <textarea asp-for="QuestionStatement" class="form-control" rows="3" required placeholder="Enter the question text"></textarea>
+            <span asp-validation-for="QuestionStatement" class="text-danger"></span>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label asp-for="SubjectId" class="form-label fw-semibold">Subject</label>
+                <select name="SubjectId" id="SubjectId" class="form-select" required>
+                    @foreach (var item in Model.Subjects)
+                    {
+                        if (item.Selected)
+                        {
+                            <option value="@item.Value" selected>@item.Text</option>
+                        }
+                        else
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    }
+                </select>
+                <span asp-validation-for="SubjectId" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="TopicId" class="form-label fw-semibold">Topic <span class="text-muted fw-normal">(optional)</span></label>
+                <select name="TopicId" id="TopicId" class="form-select">
+                    @foreach (var item in Model.Topics)
+                    {
+                        if (item.Selected)
+                        {
+                            <option value="@item.Value" selected>@item.Text</option>
+                        }
+                        else
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="QuestionType" class="form-label fw-semibold">Question Type</label>
+                <select asp-for="QuestionType" id="QuestionType" class="form-select">
+                    <option value="1">Multiple Choice</option>
+                    <option value="2">True / False</option>
+                    <option value="3">Multiple Answer</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="Difficulty" class="form-label fw-semibold">Difficulty</label>
+                <select asp-for="Difficulty" class="form-select">
+                    <option value="1">Easy</option>
+                    <option value="2">Medium</option>
+                    <option value="3">Hard</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label asp-for="Score" class="form-label fw-semibold">Score</label>
+                <input asp-for="Score" type="number" min="1" max="100" class="form-control" required />
+                <span asp-validation-for="Score" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6 d-flex align-items-end">
+                <div class="form-check form-switch mb-2">
+                    <input asp-for="IsActive" class="form-check-input" />
+                    <label asp-for="IsActive" class="form-check-label fw-semibold">Question is active</label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h5 class="mb-1">Answer Choices</h5>
+                <p class="text-muted mb-0 small" id="choiceHelpText">Mark the correct answer(s).</p>
+            </div>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="addChoiceBtn">+ Add Choice</button>
+        </div>
+
+        <div id="choicesContainer">
+            @for (var i = 0; i < Model.Choices.Count; i++)
+            {
+                <div class="choice-row row g-2 align-items-center mb-2" data-index="@i">
+                    <div class="col-md-8">
+                        <input name="Choices[@i].ChoiceText"
+                               value="@Model.Choices[i].ChoiceText"
+                               class="form-control choice-text"
+                               placeholder="Choice @(i + 1)" />
+                        <input type="hidden" name="Choices[@i].ChoiceId" value="@Model.Choices[i].ChoiceId" />
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input choice-correct"
+                                   type="checkbox"
+                                   name="Choices[@i].IsCorrect"
+                                   value="true"
+                                   id="choiceCorrect_@i"
+                                   @(Model.Choices[i].IsCorrect ? "checked" : null) />
+                            <label class="form-check-label" for="choiceCorrect_@i">Correct</label>
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" class="btn btn-outline-danger btn-sm remove-choice-btn" title="Remove">&times;</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>

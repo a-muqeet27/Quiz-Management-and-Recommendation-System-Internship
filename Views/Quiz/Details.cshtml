@@ -1,54 +1,85 @@
-﻿@model quizportal.Models.QuizInfo
-
+﻿@model quizportal.Models.Quiz
 @{
     ViewData["Title"] = "Quiz Details";
+    string DifficultyLabel(int? value) => value switch { 1 => "Easy", 2 => "Medium", 3 => "Hard", _ => "Any" };
+    string QuestionTypeLabel(int? value) => value switch { 1 => "Multiple Choice", 2 => "True / False", 3 => "Multiple Answer", _ => "Any" };
 }
 
-<div class="container mt-5">
+<div class="container mt-4 mb-5">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
 
-    <div class="card shadow">
-
-        <div class="card-header bg-primary text-white">
-            <h3>Quiz Details</h3>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">@Model.Title</h3>
+                    <span class="badge @(Model.IsActive ? "bg-success" : "bg-secondary")">
+                        @(Model.IsActive ? "Active" : "Inactive")
+                    </span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="text-muted text-uppercase small">Subject</h6>
+                            <p class="fs-5 mb-0">@(Model.Subject?.SubjectName ?? "-")</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted text-uppercase small">Topic</h6>
+                            <p class="fs-5 mb-0">@(Model.Topic?.TopicName ?? "Any topic")</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted text-uppercase small">Questions</h6>
+                            <p class="fs-5 mb-0">@Model.NoOfQuestions</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted text-uppercase small">Total Marks</h6>
+                            <p class="fs-5 mb-0">@Model.TotalMarks</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted text-uppercase small">Time Limit</h6>
+                            <p class="fs-5 mb-0">@Model.TimeLimitMinutes min</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted text-uppercase small">Difficulty Filter</h6>
+                            <p class="fs-5 mb-0">@DifficultyLabel(Model.DifficultyFilter)</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-muted text-uppercase small">Question Type Filter</h6>
+                            <p class="fs-5 mb-0">@QuestionTypeLabel(Model.QuestionTypeFilter)</p>
+                        </div>
+                        <div class="col-12">
+                            <h6 class="text-muted text-uppercase small">Created</h6>
+                            <p class="mb-0">@Model.CreatedDate.ToLocalTime().ToString("f")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="card-body">
-
-            <table class="table table-bordered">
-
-                <tr>
-                    <th width="35%">Quiz ID</th>
-                    <td>@Model.QuizID</td>
-                </tr>
-
-                <tr>
-                    <th>Quiz Title</th>
-                    <td>@Model.Title</td>
-                </tr>
-
-                <tr>
-                    <th>Number of Questions</th>
-                    <td>@Model.NoOfQuestions</td>
-                </tr>
-
-                <tr>
-                    <th>Total Marks</th>
-                    <td>@Model.TotalMarks</td>
-                </tr>
-
-                <tr>
-                    <th>Time Limit</th>
-                    <td>@Model.TimeLimit Minutes</td>
-                </tr>
-
-            </table>
-
-            <div class="mt-3">
-                <a href="/Quiz/QuizList" class="btn btn-secondary">Back</a>
+        <div class="col-lg-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="mb-3">Actions</h5>
+                    <div class="d-grid gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.QuizId" class="btn btn-warning">Edit Quiz</a>
+                        <a asp-action="Delete" asp-route-id="@Model.QuizId" class="btn btn-outline-danger">Delete Quiz</a>
+                        <a asp-action="QuizList" class="btn btn-secondary">Back to List</a>
+                    </div>
+                </div>
             </div>
 
+            <div class="card shadow-sm mt-3">
+                <div class="card-body">
+                    <h6 class="text-muted text-uppercase small">Quiz ID</h6>
+                    <p class="mb-0 fw-bold">#@Model.QuizId</p>
+                </div>
+            </div>
         </div>
-
     </div>
-
 </div>

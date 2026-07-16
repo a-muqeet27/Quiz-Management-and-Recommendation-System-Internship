@@ -1,24 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System;
+using System.Collections.Generic;
 
-namespace quizportal.Models
+namespace quizportal.Models;
+
+public partial class Choice
 {
-    public class Choice
-    {
-        [Key]
-        public int ChoiceId { get; set; }
+    public int ChoiceId { get; set; }
 
-        [Required]
-        public int QuestionId { get; set; }
+    public int QuestionId { get; set; }
 
-        [ForeignKey(nameof(QuestionId))]
-        public Question Question { get; set; } = null!;
+    public string ChoiceText { get; set; } = null!;
 
-        [Required]
-        public string ChoiceText { get; set; } = string.Empty;
+    public bool IsCorrect { get; set; }
 
-        public bool IsCorrect { get; set; }
+    public DateTime CreatedDate { get; set; }
 
-        public ICollection<QuizAnswerChoice> QuizAnswerChoices { get; set; } = new List<QuizAnswerChoice>();
-    }
+    public virtual Question Question { get; set; } = null!;
+
+    public virtual ICollection<QuizChoice> QuizChoices { get; set; } = new List<QuizChoice>();
 }
