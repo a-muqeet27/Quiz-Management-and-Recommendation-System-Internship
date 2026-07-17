@@ -7,9 +7,9 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h2 class="mb-1">Edit Quiz</h2>
-            <p class="text-muted mb-0">Update quiz details for <strong>@Model.Title</strong></p>
+            <p class="text-muted mb-0">Update settings for <strong>@Model.Title</strong> — saving regenerates random questions</p>
         </div>
-        <a asp-action="QuizList" class="btn btn-outline-secondary">Back to List</a>
+        <a asp-action="QuizList" class="btn btn-outline-secondary">Back</a>
     </div>
 
     <form asp-action="Edit" method="post" id="quizForm">

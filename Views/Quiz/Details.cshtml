@@ -3,6 +3,8 @@
     ViewData["Title"] = "Quiz Details";
     string DifficultyLabel(int? value) => value switch { 1 => "Easy", 2 => "Medium", 3 => "Hard", _ => "Any" };
     string QuestionTypeLabel(int? value) => value switch { 1 => "Multiple Choice", 2 => "True / False", 3 => "Multiple Answer", _ => "Any" };
+    string QuestionDifficultyLabel(int value) => value switch { 1 => "Easy", 2 => "Medium", 3 => "Hard", _ => "Unknown" };
+    var assignedQuestions = Model.QuizQuestions.OrderBy(qq => qq.DisplayOrder).ToList();
 }
 
 <div class="container mt-4 mb-5">
@@ -10,6 +12,14 @@
     {
         <div class="alert alert-success alert-dismissible fade show" role="alert">
             @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     }
@@ -24,7 +34,7 @@
                     </span>
                 </div>
                 <div class="card-body p-4">
-                    <div class="row g-4">
+                    <div class="row g-4 mb-4">
                         <div class="col-md-6">
                             <h6 class="text-muted text-uppercase small">Subject</h6>
                             <p class="fs-5 mb-0">@(Model.Subject?.SubjectName ?? "-")</p>
@@ -34,8 +44,12 @@
                             <p class="fs-5 mb-0">@(Model.Topic?.TopicName ?? "Any topic")</p>
                         </div>
                         <div class="col-md-4">
-                            <h6 class="text-muted text-uppercase small">Questions</h6>
+                            <h6 class="text-muted text-uppercase small">Questions to Draw</h6>
                             <p class="fs-5 mb-0">@Model.NoOfQuestions</p>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-muted text-uppercase small">Currently Generated</h6>
+                            <p class="fs-5 mb-0">@assignedQuestions.Count</p>
                         </div>
                         <div class="col-md-4">
                             <h6 class="text-muted text-uppercase small">Total Marks</h6>
@@ -45,11 +59,11 @@
                             <h6 class="text-muted text-uppercase small">Time Limit</h6>
                             <p class="fs-5 mb-0">@Model.TimeLimitMinutes min</p>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <h6 class="text-muted text-uppercase small">Difficulty Filter</h6>
                             <p class="fs-5 mb-0">@DifficultyLabel(Model.DifficultyFilter)</p>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <h6 class="text-muted text-uppercase small">Question Type Filter</h6>
                             <p class="fs-5 mb-0">@QuestionTypeLabel(Model.QuestionTypeFilter)</p>
                         </div>
@@ -58,6 +72,41 @@
                             <p class="mb-0">@Model.CreatedDate.ToLocalTime().ToString("f")</p>
                         </div>
                     </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0">Generated Questions</h5>
+                        <form asp-action="Generate" asp-route-id="@Model.QuizId" method="post" class="m-0">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-primary btn-sm">Generate New Random Set</button>
+                        </form>
+                    </div>
+
+                    <p class="text-muted small mb-3">
+                        Each time you click Generate, a new random set of @Model.NoOfQuestions questions is drawn from the bank using your filters.
+                    </p>
+
+                    @if (!assignedQuestions.Any())
+                    {
+                        <div class="alert alert-warning mb-0">No questions generated yet. Click Generate New Random Set.</div>
+                    }
+                    else
+                    {
+                        <ol class="list-group list-group-numbered">
+                            @foreach (var item in assignedQuestions)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-start">
+                                    <div class="ms-2 me-auto">
+                                        <div class="fw-semibold">@item.Question.QuestionStatement</div>
+                                        <small class="text-muted">
+                                            Score: @item.Question.Score |
+                                            @QuestionDifficultyLabel(item.Question.Difficulty)
+                                        </small>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">#@item.QuestionId</span>
+                                </li>
+                            }
+                        </ol>
+                    }
                 </div>
             </div>
         </div>
@@ -67,7 +116,11 @@
                 <div class="card-body">
                     <h5 class="mb-3">Actions</h5>
                     <div class="d-grid gap-2">
-                        <a asp-action="Edit" asp-route-id="@Model.QuizId" class="btn btn-warning">Edit Quiz</a>
+                        <form asp-action="Generate" asp-route-id="@Model.QuizId" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-primary w-100">Generate Quiz</button>
+                        </form>
+                        <a asp-action="Edit" asp-route-id="@Model.QuizId" class="btn btn-warning">Edit Quiz Settings</a>
                         <a asp-action="Delete" asp-route-id="@Model.QuizId" class="btn btn-outline-danger">Delete Quiz</a>
                         <a asp-action="QuizList" class="btn btn-secondary">Back to List</a>
                     </div>

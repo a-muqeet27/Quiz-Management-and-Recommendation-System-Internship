@@ -162,48 +162,6 @@ footer {
 
 /* Quiz Create Wizard */
 
-.quiz-wizard-steps {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.quiz-step {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 16px;
-    background: white;
-    border-radius: 999px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    color: #6c757d;
-}
-
-.quiz-step-number {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: #e9ecef;
-    font-weight: 700;
-}
-
-.quiz-step.active {
-    color: #0d6efd;
-}
-
-.quiz-step.active .quiz-step-number,
-.quiz-step.completed .quiz-step-number {
-    background: #0d6efd;
-    color: white;
-}
-
-.quiz-step.completed {
-    color: #198754;
-}
-
 .quiz-wizard-panel {
     display: none;
 }
@@ -212,20 +170,8 @@ footer {
     display: block;
 }
 
-.quiz-form-card,
-.quiz-preview-card {
+.quiz-form-card {
     border-radius: 16px;
-}
-
-.quiz-preview-list li {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-}
-
-.quiz-preview-list li:last-child {
-    border-bottom: none;
 }
 
 .review-grid {

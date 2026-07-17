@@ -3,13 +3,13 @@
     if (!form) return;
 
     const panels = Array.from(document.querySelectorAll('.quiz-wizard-panel'));
-    const steps = Array.from(document.querySelectorAll('.quiz-step'));
     const prevBtn = document.getElementById('prevStepBtn');
     const nextBtn = document.getElementById('nextStepBtn');
     const submitBtn = document.getElementById('submitQuizBtn');
 
     let currentStep = 1;
     const totalSteps = panels.length;
+    let availableCount = 0;
 
     const fields = {
         title: document.getElementById('Title'),
@@ -28,32 +28,39 @@
         return select.options[select.selectedIndex].text;
     }
 
-    function difficultyLabel() {
-        return selectedText(fields.difficulty).replace('Any difficulty', 'Any');
+    function difficultyLabel(value) {
+        return { 1: 'Easy', 2: 'Medium', 3: 'Hard' }[value] || 'Any';
     }
 
-    function typeLabel() {
-        return selectedText(fields.questionType).replace('Any type', 'Any');
+    function typeLabel(value) {
+        return { 1: 'Multiple Choice', 2: 'True / False', 3: 'Multiple Answer' }[value] || 'Any';
     }
 
-    function updatePreview() {
+    function updateReview() {
         const title = fields.title?.value?.trim() || 'Untitled Quiz';
-        document.getElementById('previewTitle').textContent = title;
-        document.getElementById('previewSubject').textContent = selectedText(fields.subject);
-        document.getElementById('previewTopic').textContent = selectedText(fields.topic).replace('-- Any Topic --', 'Any');
-        document.getElementById('previewQuestions').textContent = fields.questions?.value || '-';
-        document.getElementById('previewMarks').textContent = fields.marks?.value || '-';
-        document.getElementById('previewTime').textContent = fields.time?.value ? `${fields.time.value} min` : '-';
+        const requested = Number(fields.questions?.value || 0);
 
         document.getElementById('reviewTitle').textContent = title;
         document.getElementById('reviewSubject').textContent = selectedText(fields.subject);
         document.getElementById('reviewTopic').textContent = selectedText(fields.topic).replace('-- Any Topic --', 'Any');
         document.getElementById('reviewQuestions').textContent = fields.questions?.value || '-';
+        document.getElementById('reviewAvailable').textContent = availableCount;
         document.getElementById('reviewMarks').textContent = fields.marks?.value || '-';
         document.getElementById('reviewTime').textContent = fields.time?.value ? `${fields.time.value} minutes` : '-';
-        document.getElementById('reviewDifficulty').textContent = difficultyLabel();
-        document.getElementById('reviewType').textContent = typeLabel();
+        document.getElementById('reviewDifficulty').textContent = difficultyLabel(Number(fields.difficulty?.value || 0));
+        document.getElementById('reviewType').textContent = typeLabel(Number(fields.questionType?.value || 0));
         document.getElementById('reviewStatus').textContent = fields.isActive?.checked ? 'Active' : 'Inactive';
+
+        const info = document.getElementById('availableQuestionText');
+        if (!fields.subject?.value) {
+            info.textContent = 'Select a subject to see how many questions are available for random generation.';
+        } else if (availableCount < requested) {
+            info.textContent = `Only ${availableCount} question(s) match your filters, but you asked for ${requested}. Add more questions or lower the count.`;
+            info.parentElement.className = 'alert alert-warning mt-4 mb-0';
+        } else {
+            info.textContent = `${availableCount} question(s) match your filters. The quiz will randomly pick ${requested} of them.`;
+            info.parentElement.className = 'alert alert-info mt-4 mb-0';
+        }
     }
 
     function showStep(step) {
@@ -63,22 +70,16 @@
             panel.classList.toggle('active', Number(panel.dataset.panel) === step);
         });
 
-        steps.forEach(stepEl => {
-            const stepNumber = Number(stepEl.dataset.step);
-            stepEl.classList.toggle('active', stepNumber === step);
-            stepEl.classList.toggle('completed', stepNumber < step);
-        });
-
         prevBtn.style.visibility = step === 1 ? 'hidden' : 'visible';
         nextBtn.classList.toggle('d-none', step === totalSteps);
         submitBtn.classList.toggle('d-none', step !== totalSteps);
 
-        if (step === 3) {
-            refreshQuestionCount();
+        if (step === 2 || step === 3) {
+            refreshQuestionCount().then(updateReview);
         }
 
-        if (step === 4) {
-            updatePreview();
+        if (step === 3) {
+            updateReview();
         }
     }
 
@@ -100,6 +101,12 @@
         if (step === 2) {
             if (!fields.questions?.reportValidity()) return false;
             if (!fields.marks?.reportValidity()) return false;
+
+            const requested = Number(fields.questions?.value || 0);
+            if (availableCount < requested) {
+                alert(`Not enough questions in the bank. Need ${requested}, but only ${availableCount} match your filters.`);
+                return false;
+            }
         }
 
         return true;
@@ -110,7 +117,8 @@
         topicSelect.innerHTML = '<option value="">-- Any Topic --</option>';
 
         if (!subjectId) {
-            updatePreview();
+            availableCount = 0;
+            updateReview();
             return;
         }
 
@@ -131,29 +139,31 @@
             console.error('Failed to load topics.');
         }
 
-        updatePreview();
+        await refreshQuestionCount();
+        updateReview();
     }
 
-    async function refreshQuestionCount() {
-        const subjectId = fields.subject?.value;
-        const info = document.getElementById('availableQuestionText');
-
-        if (!subjectId) {
-            info.textContent = 'Select a subject to see available questions.';
-            return;
-        }
-
-        const params = new URLSearchParams({ subjectId });
+    function buildQuestionParams() {
+        const params = new URLSearchParams();
+        if (fields.subject?.value) params.append('subjectId', fields.subject.value);
         if (fields.topic?.value) params.append('topicId', fields.topic.value);
         if (fields.difficulty?.value) params.append('difficulty', fields.difficulty.value);
         if (fields.questionType?.value) params.append('questionType', fields.questionType.value);
+        return params;
+    }
+
+    async function refreshQuestionCount() {
+        if (!fields.subject?.value) {
+            availableCount = 0;
+            return;
+        }
 
         try {
-            const response = await fetch(`/Quiz/GetQuestionCount?${params.toString()}`);
+            const response = await fetch(`/Quiz/GetQuestionCount?${buildQuestionParams().toString()}`);
             const data = await response.json();
-            info.textContent = `${data.count} question(s) match your current filters in the question bank.`;
+            availableCount = data.count || 0;
         } catch {
-            info.textContent = 'Could not load question count.';
+            availableCount = 0;
         }
     }
 
@@ -161,30 +171,33 @@
         if (currentStep > 1) showStep(currentStep - 1);
     });
 
-    nextBtn?.addEventListener('click', () => {
+    nextBtn?.addEventListener('click', async () => {
+        if (currentStep === 2) {
+            await refreshQuestionCount();
+        }
+
         if (!validateStep(currentStep)) return;
-        updatePreview();
+        updateReview();
         if (currentStep < totalSteps) showStep(currentStep + 1);
     });
 
     fields.subject?.addEventListener('change', () => {
         loadTopics(fields.subject.value);
-        refreshQuestionCount();
     });
 
-    [fields.topic, fields.difficulty, fields.questionType].forEach(el => {
-        el?.addEventListener('change', () => {
-            updatePreview();
-            refreshQuestionCount();
+    [fields.topic, fields.difficulty, fields.questionType, fields.questions].forEach(el => {
+        el?.addEventListener('change', async () => {
+            await refreshQuestionCount();
+            updateReview();
         });
     });
 
     ['input', 'change'].forEach(eventName => {
-        form.addEventListener(eventName, updatePreview);
+        form.addEventListener(eventName, updateReview);
     });
 
     showStep(1);
-    updatePreview();
+    updateReview();
 
     if (fields.subject?.value) {
         loadTopics(fields.subject.value, fields.topic?.value);
