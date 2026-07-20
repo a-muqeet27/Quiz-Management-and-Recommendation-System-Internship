@@ -62,18 +62,17 @@
             <div class="col-md-4">
                 <label asp-for="QuestionType" class="form-label fw-semibold">Question Type</label>
                 <select asp-for="QuestionType" id="QuestionType" class="form-select">
-                    <option value="1">Multiple Choice</option>
-                    <option value="2">True / False</option>
-                    <option value="3">Multiple Answer</option>
+                    <option value="1">Single Correct</option>
+                    <option value="0">Multiple Correct</option>
                 </select>
             </div>
 
             <div class="col-md-4">
                 <label asp-for="Difficulty" class="form-label fw-semibold">Difficulty</label>
                 <select asp-for="Difficulty" class="form-select">
-                    <option value="1">Easy</option>
-                    <option value="2">Medium</option>
-                    <option value="3">Hard</option>
+                    <option value="0">Easy</option>
+                    <option value="1">Medium</option>
+                    <option value="2">Hard</option>
                 </select>
             </div>
 

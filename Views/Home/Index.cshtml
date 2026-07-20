@@ -3,54 +3,66 @@
 }
 
 <div class="container mt-5">
-
-    <div class="text-center mb-5">
+    <div class="text-center mb-4">
         <h1 class="display-4 fw-bold">Quiz Portal</h1>
-        <p class="lead">
-            Welcome to the Quiz Management System
-        </p>
+        <p class="lead">Welcome to the Quiz Management System</p>
     </div>
 
-    <div class="row justify-content-center">
-        <div class="col-md-3 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-body text-center">
-                    <h3>Subjects</h3>
-                    <p>Add subjects for quizzes and topics</p>
-                    <a asp-controller="Subject" asp-action="Create" class="btn btn-outline-primary">Create Subject</a>
+    <div class="mb-5">
+        <div class="row justify-content-center">
+            <div class="col-md-3 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-body text-center">
+                        <h3>Subjects</h3>
+                        <p>Add subjects for quizzes and topics</p>
+                        <a asp-controller="Subject" asp-action="Create" class="btn btn-outline-primary">Create Subject</a>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-md-3 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-body text-center">
-                    <h3>Topics</h3>
-                    <p>Add topics under a subject</p>
-                    <a asp-controller="Topic" asp-action="Create" class="btn btn-outline-primary">Create Topic</a>
+            <div class="col-md-3 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-body text-center">
+                        <h3>Topics</h3>
+                        <p>Add topics under a subject</p>
+                        <a asp-controller="Topic" asp-action="Create" class="btn btn-outline-primary">Create Topic</a>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-md-3 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-body text-center">
-                    <h3>Questions</h3>
-                    <p>Build your question bank with choices</p>
-                    <a asp-controller="Question" asp-action="Create" class="btn btn-outline-primary">Create Question</a>
+            <div class="col-md-3 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-body text-center">
+                        <h3>Questions</h3>
+                        <p>Build your question bank with choices</p>
+                        <a asp-controller="Question" asp-action="Create" class="btn btn-outline-primary">Create Question</a>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-md-3 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-body text-center">
-                    <h3>Quizzes</h3>
-                    <p>Build quizzes from your question bank</p>
-                    <a asp-controller="Quiz" asp-action="Create" class="btn btn-primary">Create Quiz</a>
+            <div class="col-md-3 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-body text-center">
+                        <h3>Quizzes</h3>
+                        <p>Build quizzes from your question bank</p>
+                        <a asp-controller="Quiz" asp-action="Create" class="btn btn-outline-primary">Create Quiz</a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <div class="mb-4">
+        <div class="row justify-content-center">
+            <div class="col-md-4 mb-4">
+                <div class="card shadow h-100 border-success">
+                    <div class="card-body text-center">
+                        <h3>Take a Quiz</h3>
+                        <p>Browse active quizzes and test your knowledge</p>
+                        <a asp-controller="QuizAttempt" asp-action="Index" class="btn btn-success">Attempt Quiz</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

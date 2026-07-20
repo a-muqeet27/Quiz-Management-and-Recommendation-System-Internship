@@ -27,8 +27,7 @@ namespace quizportal.Controllers
             }
 
             var topics = await query
-                .OrderBy(t => t.Subject.SubjectName)
-                .ThenBy(t => t.TopicName)
+                .OrderBy(t => t.TopicId)
                 .ToListAsync();
 
             ViewBag.SelectedSubjectId = subjectId;

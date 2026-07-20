@@ -1,0 +1,142 @@
+@model IEnumerable<quizportal.Models.Quiz>
+@{
+    ViewData["Title"] = "Attempt Quiz";
+    var subjects = ViewBag.Subjects as IEnumerable<SelectListItem> ?? Enumerable.Empty<SelectListItem>();
+    var recentAttempts = ViewBag.RecentAttempts as IEnumerable<quizportal.Models.ViewModels.QuizAttemptHistoryViewModel> ?? Enumerable.Empty<quizportal.Models.ViewModels.QuizAttemptHistoryViewModel>();
+    var studentName = ViewBag.StudentName as string;
+}
+
+<div class="container mt-4 mb-5">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h2 class="mb-1">Attempt Quiz</h2>
+            <p class="text-muted mb-0">
+                @if (!string.IsNullOrWhiteSpace(studentName))
+                {
+                    <span>Welcome, <strong>@studentName</strong>. Start a quiz or view your saved attempts.</span>
+                }
+                else
+                {
+                    <span>Start a quiz with your name to save your attempts.</span>
+                }
+            </p>
+        </div>
+        <a asp-action="History" class="btn btn-outline-primary">Saved Attempts</a>
+    </div>
+    <form method="get" asp-action="Index" class="row g-2 align-items-end mb-4">
+        <div class="col-md-5">
+            <label class="form-label fw-semibold">Filter by Subject</label>
+            <select name="subjectId" class="form-select" onchange="this.form.submit()">
+                @foreach (var item in subjects)
+                {
+                    if (item.Selected)
+                    {
+                        <option value="@item.Value" selected>@item.Text</option>
+                    }
+                    else
+                    {
+                        <option value="@item.Value">@item.Text</option>
+                    }
+                }
+            </select>
+        </div>
+        <div class="col-md-auto">
+            <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        </div>
+    </form>
+
+    @if (!Model.Any())
+    {
+        <div class="card shadow-sm text-center p-5">
+            <h4>No quizzes available to attempt</h4>
+            <p class="text-muted mb-0">Active quizzes with generated questions will appear here.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var quiz in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">@quiz.Title</h5>
+                            <p class="text-muted mb-3">
+                                @(quiz.Subject?.SubjectName ?? "-")
+                                @if (quiz.Topic != null)
+                                {
+                                    <span> · @quiz.Topic.TopicName</span>
+                                }
+                            </p>
+                            <div class="row g-2 mb-4 text-center">
+                                <div class="col-4">
+                                    <div class="border rounded p-2">
+                                        <div class="small text-muted">Questions</div>
+                                        <div class="fw-bold">@quiz.QuizQuestions.Count</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="border rounded p-2">
+                                        <div class="small text-muted">Marks</div>
+                                        <div class="fw-bold">@quiz.TotalMarks</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="border rounded p-2">
+                                        <div class="small text-muted">Time</div>
+                                        <div class="fw-bold">@quiz.TimeLimitMinutes m</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a asp-action="Start" asp-route-id="@quiz.QuizId" class="btn btn-success mt-auto">Start Attempt</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (recentAttempts.Any())
+    {
+        <div class="mt-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">My Recent Attempts</h4>
+                <a asp-action="History" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Quiz</th>
+                            <th>Score</th>
+                            <th width="200">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var attempt in recentAttempts.Take(5))
+                        {
+                            <tr>
+                                <td>@attempt.AttemptDate.ToLocalTime().ToString("g")</td>
+                                <td>@attempt.QuizTitle</td>
+                                <td>@attempt.ObtainedMarks / @attempt.TotalMarks</td>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@attempt.QuizAttemptId" class="btn btn-primary btn-sm">View</a>
+                                    <a asp-action="Start" asp-route-id="@attempt.QuizId" class="btn btn-success btn-sm">Re-attempt</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

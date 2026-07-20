@@ -28,7 +28,7 @@ namespace quizportal.Controllers
                 query = query.Where(q => q.SubjectId == subjectId);
 
             var quizzes = await query
-                .OrderByDescending(q => q.CreatedDate)
+                .OrderBy(q => q.QuizId)
                 .ToListAsync();
 
             await PopulateFilterDropdownsAsync(subjectId);
@@ -61,7 +61,7 @@ namespace quizportal.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["SuccessMessage"] = $"Quiz \"{quiz.Title}\" was created with {quiz.NoOfQuestions} randomly selected questions.";
-                return RedirectToAction(nameof(Details), new { id = quiz.QuizId });
+                return RedirectToAction(nameof(GeneratedQuestions), new { id = quiz.QuizId });
             }
 
             await PopulateFormDropdownsAsync(model, model.SubjectId, model.TopicId);
@@ -70,6 +70,20 @@ namespace quizportal.Controllers
         }
 
         public async Task<IActionResult> Details(int id)
+        {
+            var quiz = await _context.Quizzes
+                .Include(q => q.Subject)
+                .Include(q => q.Topic)
+                .Include(q => q.QuizQuestions)
+                .FirstOrDefaultAsync(q => q.QuizId == id);
+
+            if (quiz == null)
+                return NotFound();
+
+            return View(quiz);
+        }
+
+        public async Task<IActionResult> GeneratedQuestions(int id)
         {
             var quiz = await _context.Quizzes
                 .Include(q => q.Subject)
@@ -105,15 +119,15 @@ namespace quizportal.Controllers
             {
                 TempData["ErrorMessage"] =
                     $"Not enough questions in the bank. Need {quiz.NoOfQuestions}, but only {availableCount} match the quiz filters.";
-                return RedirectToAction(nameof(Details), new { id });
+                return RedirectToAction(nameof(GeneratedQuestions), new { id });
             }
 
             await GenerateRandomQuestionsAsync(quiz);
             await _context.SaveChangesAsync();
 
             TempData["SuccessMessage"] =
-                $"Generated a new random set of {quiz.NoOfQuestions} questions. Generate again anytime for a different set.";
-            return RedirectToAction(nameof(Details), new { id });
+                $"Generated a new random set of {quiz.NoOfQuestions} questions.";
+            return RedirectToAction(nameof(GeneratedQuestions), new { id });
         }
 
         public async Task<IActionResult> Edit(int id)
@@ -161,7 +175,7 @@ namespace quizportal.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["SuccessMessage"] = "Quiz updated and questions were randomly regenerated.";
-                return RedirectToAction(nameof(Details), new { id });
+                return RedirectToAction(nameof(GeneratedQuestions), new { id });
             }
 
             await PopulateFormDropdownsAsync(model, model.SubjectId, model.TopicId);

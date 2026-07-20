@@ -1,10 +1,10 @@
 ﻿@model quizportal.Models.Quiz
 @{
     ViewData["Title"] = "Quiz Details";
-    string DifficultyLabel(int? value) => value switch { 1 => "Easy", 2 => "Medium", 3 => "Hard", _ => "Any" };
-    string QuestionTypeLabel(int? value) => value switch { 1 => "Multiple Choice", 2 => "True / False", 3 => "Multiple Answer", _ => "Any" };
-    string QuestionDifficultyLabel(int value) => value switch { 1 => "Easy", 2 => "Medium", 3 => "Hard", _ => "Unknown" };
-    var assignedQuestions = Model.QuizQuestions.OrderBy(qq => qq.DisplayOrder).ToList();
+    string DifficultyLabel(int? value) => value switch { 0 => "Easy", 1 => "Medium", 2 => "Hard", _ => "Any" };
+    // Database CHECK constraint allows only 0/1 for QuestionType in dbo.Question.
+    // 1 = single-correct, 0 = multiple-correct.
+    string QuestionTypeLabel(int? value) => value switch { 1 => "Single Correct", 0 => "Multiple Correct", _ => "Any" };
 }
 
 <div class="container mt-4 mb-5">
@@ -34,7 +34,7 @@
                     </span>
                 </div>
                 <div class="card-body p-4">
-                    <div class="row g-4 mb-4">
+                    <div class="row g-4">
                         <div class="col-md-6">
                             <h6 class="text-muted text-uppercase small">Subject</h6>
                             <p class="fs-5 mb-0">@(Model.Subject?.SubjectName ?? "-")</p>
@@ -49,7 +49,7 @@
                         </div>
                         <div class="col-md-4">
                             <h6 class="text-muted text-uppercase small">Currently Generated</h6>
-                            <p class="fs-5 mb-0">@assignedQuestions.Count</p>
+                            <p class="fs-5 mb-0">@Model.QuizQuestions.Count</p>
                         </div>
                         <div class="col-md-4">
                             <h6 class="text-muted text-uppercase small">Total Marks</h6>
@@ -72,41 +72,6 @@
                             <p class="mb-0">@Model.CreatedDate.ToLocalTime().ToString("f")</p>
                         </div>
                     </div>
-
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="mb-0">Generated Questions</h5>
-                        <form asp-action="Generate" asp-route-id="@Model.QuizId" method="post" class="m-0">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-primary btn-sm">Generate New Random Set</button>
-                        </form>
-                    </div>
-
-                    <p class="text-muted small mb-3">
-                        Each time you click Generate, a new random set of @Model.NoOfQuestions questions is drawn from the bank using your filters.
-                    </p>
-
-                    @if (!assignedQuestions.Any())
-                    {
-                        <div class="alert alert-warning mb-0">No questions generated yet. Click Generate New Random Set.</div>
-                    }
-                    else
-                    {
-                        <ol class="list-group list-group-numbered">
-                            @foreach (var item in assignedQuestions)
-                            {
-                                <li class="list-group-item d-flex justify-content-between align-items-start">
-                                    <div class="ms-2 me-auto">
-                                        <div class="fw-semibold">@item.Question.QuestionStatement</div>
-                                        <small class="text-muted">
-                                            Score: @item.Question.Score |
-                                            @QuestionDifficultyLabel(item.Question.Difficulty)
-                                        </small>
-                                    </div>
-                                    <span class="badge bg-primary rounded-pill">#@item.QuestionId</span>
-                                </li>
-                            }
-                        </ol>
-                    }
                 </div>
             </div>
         </div>
@@ -116,11 +81,8 @@
                 <div class="card-body">
                     <h5 class="mb-3">Actions</h5>
                     <div class="d-grid gap-2">
-                        <form asp-action="Generate" asp-route-id="@Model.QuizId" method="post">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-primary w-100">Generate Quiz</button>
-                        </form>
-                        <a asp-action="Edit" asp-route-id="@Model.QuizId" class="btn btn-warning">Edit Quiz Settings</a>
+                        <a asp-action="GeneratedQuestions" asp-route-id="@Model.QuizId" class="btn btn-primary">View Questions</a>
+                        <a asp-action="Edit" asp-route-id="@Model.QuizId" class="btn btn-warning">Edit Quiz</a>
                         <a asp-action="Delete" asp-route-id="@Model.QuizId" class="btn btn-outline-danger">Delete Quiz</a>
                         <a asp-action="QuizList" class="btn btn-secondary">Back to List</a>
                     </div>

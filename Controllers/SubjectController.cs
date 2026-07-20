@@ -18,7 +18,7 @@ namespace quizportal.Controllers
         {
             var subjects = await _context.Subjects
                 .Include(s => s.Topics)
-                .OrderBy(s => s.SubjectName)
+                .OrderBy(s => s.SubjectId)
                 .ToListAsync();
 
             return View(subjects);

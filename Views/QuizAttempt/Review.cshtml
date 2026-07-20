@@ -1,0 +1,111 @@
+@model quizportal.Models.ViewModels.QuizAttemptReviewViewModel
+@{
+    ViewData["Title"] = "Review Attempt";
+    var scoreClass = Model.QuizPercentage >= 70 ? "success" : Model.QuizPercentage >= 50 ? "warning" : "danger";
+
+    string StatusBadgeClass(string status) => status switch
+    {
+        "Correct" => "bg-success",
+        "Wrong" => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    string ChoiceClass(bool isSelected, bool isCorrect) => (isSelected, isCorrect) switch
+    {
+        (true, true) => "list-group-item-success",
+        (true, false) => "list-group-item-danger",
+        (false, true) => "list-group-item-warning",
+        _ => ""
+    };
+}
+
+<div class="container mt-4 mb-5">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-@scoreClass text-white">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                <div>
+                    <h2 class="mb-1">@Model.QuizTitle</h2>
+                    <p class="mb-0 opacity-75">Attempt by @Model.StudentName</p>
+                </div>
+                <div class="text-end">
+                    <div class="fs-3 fw-bold">@Model.ObtainedMarks / @Model.TotalMarks</div>
+                    <div>@Model.QuizPercentage.ToString("0.##")%</div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row g-3 text-center">
+                <div class="col-sm-4">
+                    <div class="border rounded p-3">
+                        <div class="text-muted small text-uppercase">Correct</div>
+                        <div class="fs-4 fw-bold text-success">@Model.CorrectAnswers</div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="border rounded p-3">
+                        <div class="text-muted small text-uppercase">Wrong</div>
+                        <div class="fs-4 fw-bold text-danger">@Model.WrongAnswers</div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="border rounded p-3">
+                        <div class="text-muted small text-uppercase">Unattempted</div>
+                        <div class="fs-4 fw-bold text-secondary">@Model.Unattempted</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mb-3">Answer Review</h4>
+
+    @for (var i = 0; i < Model.Questions.Count; i++)
+    {
+        var question = Model.Questions[i];
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                    <h5 class="mb-0">Q@(i + 1). @question.QuestionStatement</h5>
+                    <div class="text-end">
+                        <span class="badge @StatusBadgeClass(question.Status)">@question.Status</span>
+                        <div class="small text-muted mt-1">@question.MarksObtained / @question.Score marks</div>
+                    </div>
+                </div>
+
+                <div class="list-group">
+                    @foreach (var choice in question.Choices)
+                    {
+                        <div class="list-group-item @ChoiceClass(choice.IsSelected, choice.IsCorrect) d-flex justify-content-between align-items-center">
+                            <span>@choice.ChoiceText</span>
+                            <span>
+                                @if (choice.IsSelected)
+                                {
+                                    <span class="badge bg-primary me-1">Your answer</span>
+                                }
+                                @if (choice.IsCorrect)
+                                {
+                                    <span class="badge bg-success">Correct</span>
+                                }
+                            </span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="d-flex flex-wrap gap-2">
+        <a asp-action="Details" asp-route-id="@Model.QuizAttemptId" class="btn btn-outline-secondary">Back to My Attempt</a>
+        <a asp-action="Start" asp-route-id="@Model.QuizId" class="btn btn-success">Re-attempt Quiz</a>
+        <a asp-action="History" class="btn btn-outline-primary">Saved Attempts</a>
+        <a asp-action="Index" class="btn btn-secondary">Back to Attempt Quiz</a>
+    </div>
+</div>

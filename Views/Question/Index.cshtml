@@ -6,17 +6,16 @@
 
     string TypeLabel(int value) => value switch
     {
-        1 => "Multiple Choice",
-        2 => "True / False",
-        3 => "Multiple Answer",
+        1 => "Single Correct",
+        0 => "Multiple Correct",
         _ => "Unknown"
     };
 
     string DifficultyLabel(int value) => value switch
     {
-        1 => "Easy",
-        2 => "Medium",
-        3 => "Hard",
+        0 => "Easy",
+        1 => "Medium",
+        2 => "Hard",
         _ => "Unknown"
     };
 }
@@ -41,7 +40,6 @@
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
             <h2 class="mb-1">Questions</h2>
-            <p class="text-muted mb-0">Question bank linked to subjects and topics</p>
         </div>
         <a asp-action="Create" class="btn btn-primary">+ Create Question</a>
     </div>

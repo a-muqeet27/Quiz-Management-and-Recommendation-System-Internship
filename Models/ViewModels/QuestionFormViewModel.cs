@@ -23,7 +23,7 @@ public class QuestionFormViewModel
 
     public int QuestionType { get; set; } = 1;
 
-    public int Difficulty { get; set; } = 1;
+    public int Difficulty { get; set; } = 0;
 
     public int Score { get; set; } = 1;
 

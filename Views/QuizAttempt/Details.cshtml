@@ -1,0 +1,71 @@
+@model quizportal.Models.ViewModels.QuizAttemptDetailsViewModel
+@{
+    ViewData["Title"] = "My Attempt";
+    var scoreClass = Model.QuizPercentage >= 70 ? "success" : Model.QuizPercentage >= 50 ? "warning" : "danger";
+}
+
+<div class="container mt-4 mb-5">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-@scoreClass text-white">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                <div>
+                    <h2 class="mb-0">@Model.QuizTitle</h2>
+                    <p class="mb-0 opacity-75">Attempt by @Model.StudentName</p>
+                    <small class="opacity-75">@Model.AttemptDate.ToLocalTime().ToString("f")</small>
+                </div>
+                <div class="text-end">
+                    <div class="fs-3 fw-bold">@Model.ObtainedMarks / @Model.TotalMarks</div>
+                    <div>@Model.QuizPercentage.ToString("0.##")%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mb-3">My Answers</h4>
+
+    @for (var i = 0; i < Model.Questions.Count; i++)
+    {
+        var question = Model.Questions[i];
+        var hasAnswer = question.Choices.Any(c => c.IsSelected);
+
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                    <h5 class="mb-0">Q@(i + 1). @question.QuestionStatement</h5>
+                    <span class="badge bg-light text-dark border">@question.Score marks</span>
+                </div>
+
+                @if (!hasAnswer)
+                {
+                    <p class="text-muted mb-0">No answer selected.</p>
+                }
+                else
+                {
+                    <div class="list-group">
+                        @foreach (var choice in question.Choices.Where(c => c.IsSelected))
+                        {
+                            <div class="list-group-item list-group-item-primary">
+                                @choice.ChoiceText
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+
+    <div class="d-flex flex-wrap gap-2">
+        <a asp-action="Review" asp-route-id="@Model.QuizAttemptId" class="btn btn-outline-primary">Review Correct / Wrong</a>
+        <a asp-action="Start" asp-route-id="@Model.QuizId" class="btn btn-success">Re-attempt Quiz</a>
+        <a asp-action="History" class="btn btn-outline-secondary">Saved Attempts</a>
+        <a asp-action="Index" class="btn btn-secondary">Back to Attempt Quiz</a>
+    </div>
+</div>

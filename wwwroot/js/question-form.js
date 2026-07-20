@@ -90,17 +90,10 @@
         const type = Number(questionTypeSelect?.value || 1);
 
         if (type === 1) {
-            choiceHelpText.textContent = 'Multiple Choice: mark exactly one correct answer.';
-        } else if (type === 2) {
-            choiceHelpText.textContent = 'True/False: use two choices and mark one correct.';
-            const rows = choicesContainer.querySelectorAll('.choice-row');
-            if (rows.length === 0 || (rows.length === 4 && [...rows].every(r => !r.querySelector('.choice-text')?.value))) {
-                choicesContainer.innerHTML = '';
-                addChoiceRow('True', true);
-                addChoiceRow('False', false);
-            }
+            choiceHelpText.textContent = 'Single Correct: mark exactly one correct answer.';
         } else {
-            choiceHelpText.textContent = 'Multiple Answer: mark one or more correct answers.';
+            // Database supports only 0/1; 0 means multiple-correct.
+            choiceHelpText.textContent = 'Multiple Correct: mark one or more correct answers.';
         }
     }
 

@@ -31,7 +31,7 @@ namespace quizportal.Controllers
                 query = query.Where(q => q.TopicId == topicId);
 
             var questions = await query
-                .OrderByDescending(q => q.CreatedDate)
+                .OrderBy(q => q.QuestionId)
                 .ToListAsync();
 
             await PopulateFilterDropdownsAsync(subjectId, topicId);
@@ -228,10 +228,12 @@ namespace quizportal.Controllers
             if (model.Score < 1)
                 ModelState.AddModelError(nameof(model.Score), "Score must be at least 1.");
 
-            if (model.QuestionType is < 1 or > 3)
+            // Database CHECK constraint allows only 0 or 1 for QuestionType.
+            // 1 = single correct, 0 = multiple correct.
+            if (model.QuestionType is < 0 or > 1)
                 ModelState.AddModelError(nameof(model.QuestionType), "Please select a valid question type.");
 
-            if (model.Difficulty is < 1 or > 3)
+            if (model.Difficulty is < 0 or > 2)
                 ModelState.AddModelError(nameof(model.Difficulty), "Please select a valid difficulty.");
 
             var filledChoices = (model.Choices ?? [])
@@ -244,20 +246,18 @@ namespace quizportal.Controllers
             if (!filledChoices.Any(c => c.IsCorrect))
                 ModelState.AddModelError(string.Empty, "Mark at least one choice as correct.");
 
-            if (model.QuestionType == 1 && filledChoices.Count(c => c.IsCorrect) != 1)
-                ModelState.AddModelError(string.Empty, "Multiple Choice questions must have exactly one correct answer.");
-
-            if (model.QuestionType == 2)
+            if (model.QuestionType == 1)
             {
-                if (filledChoices.Count != 2)
-                    ModelState.AddModelError(string.Empty, "True/False questions must have exactly 2 choices.");
-
+                // Single correct: exactly one checked correct choice.
                 if (filledChoices.Count(c => c.IsCorrect) != 1)
-                    ModelState.AddModelError(string.Empty, "True/False questions must have exactly one correct answer.");
+                    ModelState.AddModelError(string.Empty, "Single-correct questions must have exactly one correct answer.");
             }
-
-            if (model.QuestionType == 3 && filledChoices.Count(c => c.IsCorrect) < 1)
-                ModelState.AddModelError(string.Empty, "Multiple Answer questions need at least one correct choice.");
+            else if (model.QuestionType == 0)
+            {
+                // Multiple correct: one or more checked correct choices.
+                if (filledChoices.Count(c => c.IsCorrect) < 1)
+                    ModelState.AddModelError(string.Empty, "Multiple-correct questions must have at least one correct answer.");
+            }
         }
 
         private static List<Choice> BuildChoices(QuestionFormViewModel model) =>

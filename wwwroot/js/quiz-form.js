@@ -29,11 +29,11 @@
     }
 
     function difficultyLabel(value) {
-        return { 1: 'Easy', 2: 'Medium', 3: 'Hard' }[value] || 'Any';
+        return { 0: 'Easy', 1: 'Medium', 2: 'Hard' }[value] || 'Any';
     }
 
     function typeLabel(value) {
-        return { 1: 'Multiple Choice', 2: 'True / False', 3: 'Multiple Answer' }[value] || 'Any';
+        return { 1: 'Single Correct', 0: 'Multiple Correct' }[value] || 'Any';
     }
 
     function updateReview() {
@@ -47,8 +47,18 @@
         document.getElementById('reviewAvailable').textContent = availableCount;
         document.getElementById('reviewMarks').textContent = fields.marks?.value || '-';
         document.getElementById('reviewTime').textContent = fields.time?.value ? `${fields.time.value} minutes` : '-';
-        document.getElementById('reviewDifficulty').textContent = difficultyLabel(Number(fields.difficulty?.value || 0));
-        document.getElementById('reviewType').textContent = typeLabel(Number(fields.questionType?.value || 0));
+        const difficultyRaw = fields.difficulty?.value;
+        document.getElementById('reviewDifficulty').textContent =
+            (difficultyRaw === undefined || difficultyRaw === null || difficultyRaw === '')
+                ? 'Any'
+                : difficultyLabel(Number(difficultyRaw));
+
+        // If the select is empty, show "Any" instead of mapping ""/0.
+        const questionTypeRaw = fields.questionType?.value;
+        document.getElementById('reviewType').textContent =
+            (questionTypeRaw === undefined || questionTypeRaw === null || questionTypeRaw === '')
+                ? 'Any'
+                : typeLabel(Number(questionTypeRaw));
         document.getElementById('reviewStatus').textContent = fields.isActive?.checked ? 'Active' : 'Inactive';
 
         const info = document.getElementById('availableQuestionText');
