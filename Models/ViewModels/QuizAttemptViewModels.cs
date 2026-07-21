@@ -17,7 +17,6 @@ public class QuizAttemptStartViewModel
     public int TimeLimitMinutes { get; set; }
 
     [Display(Name = "Your Name")]
-    [Required(ErrorMessage = "Please enter your name.")]
     [StringLength(100)]
     public string StudentName { get; set; } = string.Empty;
 }
@@ -29,6 +28,10 @@ public class QuizAttemptTakeViewModel
     public string QuizTitle { get; set; } = string.Empty;
 
     public int TimeLimitMinutes { get; set; }
+
+    public int RemainingSeconds { get; set; }
+
+    public bool HasTimeLimit => TimeLimitMinutes > 0;
 
     public List<QuizAttemptQuestionViewModel> Questions { get; set; } = [];
 }
@@ -58,6 +61,8 @@ public class QuizAttemptChoiceViewModel
 public class QuizAttemptSubmitViewModel
 {
     public int QuizAttemptId { get; set; }
+
+    public bool TimedOut { get; set; }
 
     public List<QuizAttemptAnswerViewModel> Answers { get; set; } = [];
 }

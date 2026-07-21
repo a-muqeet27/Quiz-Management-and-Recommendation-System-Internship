@@ -159,6 +159,29 @@ footer {
     margin-top: 40px;
 }
 
+.navbar-user-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    text-align: end;
+}
+
+.navbar-user-name {
+    font-weight: 600;
+    color: #fff;
+}
+
+.navbar-user-role {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.quiz-timer {
+    min-width: 140px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
 
 /* Quiz Create Wizard */
 

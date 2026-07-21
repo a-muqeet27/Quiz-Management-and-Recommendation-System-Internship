@@ -1,5 +1,5 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using quizportal.Data;
 using quizportal.Models;
 using System.Diagnostics;
@@ -15,19 +15,23 @@ namespace quizportal.Controllers
             _context = context;
         }
 
+        [Authorize(Roles = $"{AppRoles.TeacherName},{AppRoles.StudentName}")]
         public IActionResult Index()
         {
             return View();
         }
+
+        [AllowAnonymous]
         public IActionResult Privacy()
         {
             return View();
         }
 
+        [AllowAnonymous]
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        }       
+        }
     }
 }

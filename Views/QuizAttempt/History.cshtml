@@ -1,13 +1,13 @@
 @model IEnumerable<quizportal.Models.ViewModels.QuizAttemptHistoryViewModel>
 @{
-    ViewData["Title"] = "Saved Attempts";
+    ViewData["Title"] = "History";
     var studentName = ViewBag.StudentName as string;
 }
 
 <div class="container mt-4 mb-5">
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
         <div>
-            <h2 class="mb-1">My Saved Attempts</h2>
+            <h2 class="mb-1">My History</h2>
             @if (!string.IsNullOrWhiteSpace(studentName))
             {
                 <p class="text-muted mb-0">Showing attempts for <strong>@studentName</strong></p>
@@ -23,7 +23,7 @@
     @if (!Model.Any())
     {
         <div class="card shadow-sm text-center p-5">
-            <h4>No saved attempts yet</h4>
+            <h4>No History yet</h4>
             <p class="text-muted mb-3">Complete a quiz to save your attempt here. Your answers will be stored separately from the correct/wrong review.</p>
             <a asp-action="Index" class="btn btn-success">Attempt a Quiz</a>
         </div>

@@ -1,0 +1,20 @@
+@{
+    ViewData["Title"] = "Access Denied";
+}
+
+<div class="container mt-5 mb-5 text-center">
+    <h2>Access Denied</h2>
+    <p class="text-muted">You do not have permission to view this page.</p>
+    @if (User.IsInRole(quizportal.Models.AppRoles.TeacherName))
+    {
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Go to Home</a>
+    }
+    else if (User.IsInRole(quizportal.Models.AppRoles.StudentName))
+    {
+        <a asp-controller="Home" asp-action="Index" class="btn btn-success">Go to Home</a>
+    }
+    else
+    {
+        <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Login</a>
+    }
+</div>

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +8,7 @@ using quizportal.Models.ViewModels;
 
 namespace quizportal.Controllers
 {
+    [Authorize(Roles = AppRoles.TeacherName)]
     public class QuestionController : Controller
     {
         private readonly ApplicationDbContext _context;

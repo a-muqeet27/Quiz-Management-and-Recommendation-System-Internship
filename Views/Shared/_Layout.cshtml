@@ -11,49 +11,87 @@
 </head>
 <body>
     <header>
-
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
             <div class="container">
-                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index"> Quiz Portal </a>
+                @if (User.IsInRole(quizportal.Models.AppRoles.TeacherName))
+                {
+                    <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">Quiz Portal</a>
+                }
+                else if (User.IsInRole(quizportal.Models.AppRoles.StudentName))
+                {
+                    <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">Quiz Portal</a>
+                }
+                else
+                {
+                    <a class="navbar-brand fw-bold" asp-controller="Account" asp-action="Login">Quiz Portal</a>
+                }
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-
                 <div class="collapse navbar-collapse" id="navbarMenu">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index"> Home </a>
-                        </li>
+                    <ul class="navbar-nav me-auto">
+                        @if (User.IsInRole(quizportal.Models.AppRoles.TeacherName))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Subject" asp-action="Index">Subjects</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Topic" asp-action="Index">Topics</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Question" asp-action="Index">Questions</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Quiz" asp-action="QuizList">Quizzes</a>
+                            </li>
+                        }
+                        else if (User.IsInRole(quizportal.Models.AppRoles.StudentName))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="QuizAttempt" asp-action="Index">Attempt Quiz</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="QuizAttempt" asp-action="History">Saved Attempts</a>
+                            </li>
+                        }
+                    </ul>
 
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Subject" asp-action="Index">Subjects</a>
-                        </li>
+                    <ul class="navbar-nav align-items-lg-center">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            var roleLabel = User.IsInRole(quizportal.Models.AppRoles.TeacherName) ? "Teacher" : "Student";
+                            var displayName = User.FindFirst("FullName")?.Value ?? User.Identity.Name ?? "User";
 
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Topic" asp-action="Index">Topics</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Question" asp-action="Index">Questions</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Quiz" asp-action="QuizList">Quizzes</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="QuizAttempt" asp-action="Index">Attempt Quiz</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="QuizAttempt" asp-action="History">Saved Attempts</a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+                            <li class="nav-item">
+                                <span class="nav-link navbar-user-info">
+                                    <span class="navbar-user-name">@displayName</span>
+                                    <span class="navbar-user-role">@roleLabel</span>
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-light btn-sm ms-lg-2">Logout</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Account" asp-action="Register">Register</a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
@@ -68,9 +106,10 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            © 2026 Quiz Portal | <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            © 2026 Quiz Portal
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

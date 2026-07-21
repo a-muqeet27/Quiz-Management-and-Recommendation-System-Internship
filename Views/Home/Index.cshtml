@@ -1,14 +1,24 @@
 ﻿@{
     ViewData["Title"] = "Home";
+    var isTeacher = User.IsInRole(quizportal.Models.AppRoles.TeacherName);
+    var isStudent = User.IsInRole(quizportal.Models.AppRoles.StudentName);
 }
 
 <div class="container mt-5">
     <div class="text-center mb-4">
         <h1 class="display-4 fw-bold">Quiz Portal</h1>
-        <p class="lead">Welcome to the Quiz Management System</p>
+        @if (isTeacher)
+        {
+            <p class="lead">Teacher Dashboard</p>
+        }
+        else if (isStudent)
+        {
+            <p class="lead">Student Dashboard</p>
+        }
     </div>
 
-    <div class="mb-5">
+    @if (isTeacher)
+    {
         <div class="row justify-content-center">
             <div class="col-md-3 mb-4">
                 <div class="card shadow h-100">
@@ -50,19 +60,29 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="mb-4">
+    }
+    else if (isStudent)
+    {
         <div class="row justify-content-center">
             <div class="col-md-4 mb-4">
                 <div class="card shadow h-100 border-success">
                     <div class="card-body text-center">
-                        <h3>Take a Quiz</h3>
+                        <h3>Attempt Quiz</h3>
                         <p>Browse active quizzes and test your knowledge</p>
-                        <a asp-controller="QuizAttempt" asp-action="Index" class="btn btn-success">Attempt Quiz</a>
+                        <a asp-controller="QuizAttempt" asp-action="Index" class="btn btn-success">Start Quiz</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-body text-center">
+                        <h3>History</h3>
+                        <p>View your past quiz attempts and scores</p>
+                        <a asp-controller="QuizAttempt" asp-action="History" class="btn btn-outline-primary">View Attempts</a>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    }
 </div>

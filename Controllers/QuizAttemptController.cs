@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -7,9 +9,9 @@ using quizportal.Models.ViewModels;
 
 namespace quizportal.Controllers;
 
+[Authorize(Roles = AppRoles.StudentName)]
 public class QuizAttemptController : Controller
 {
-    private const string StudentUserIdSessionKey = "StudentUserId";
     private readonly ApplicationDbContext _context;
 
     public QuizAttemptController(ApplicationDbContext context)
@@ -35,29 +37,22 @@ public class QuizAttemptController : Controller
 
         await PopulateFilterDropdownsAsync(subjectId);
         ViewBag.RecentAttempts = await LoadRecentAttemptsAsync();
-        ViewBag.StudentName = await GetCurrentStudentNameAsync();
+        ViewBag.StudentName = GetCurrentStudentDisplayName();
         return View(quizzes);
     }
 
     public async Task<IActionResult> History()
     {
         var attempts = await LoadRecentAttemptsAsync();
-        ViewBag.StudentName = await GetCurrentStudentNameAsync();
+        ViewBag.StudentName = GetCurrentStudentDisplayName();
         return View(attempts);
     }
 
     public async Task<IActionResult> Details(int id)
     {
-        var model = await BuildDetailsViewModelAsync(id);
-        if (model == null)
-            return NotFound();
-
         var currentUserId = GetCurrentStudentUserId();
         if (!currentUserId.HasValue)
-        {
-            TempData["ErrorMessage"] = "Please start a quiz with your name to view saved attempts.";
-            return RedirectToAction(nameof(Index));
-        }
+            return RedirectToAction("Login", "Account");
 
         var attempt = await _context.QuizAttempts
             .AsNoTracking()
@@ -69,6 +64,10 @@ public class QuizAttemptController : Controller
             return RedirectToAction(nameof(History));
         }
 
+        var model = await BuildDetailsViewModelAsync(id);
+        if (model == null)
+            return NotFound();
+
         return View(model);
     }
 
@@ -76,10 +75,7 @@ public class QuizAttemptController : Controller
     {
         var currentUserId = GetCurrentStudentUserId();
         if (!currentUserId.HasValue)
-        {
-            TempData["ErrorMessage"] = "Please start a quiz with your name to review answers.";
-            return RedirectToAction(nameof(Index));
-        }
+            return RedirectToAction("Login", "Account");
 
         var attempt = await _context.QuizAttempts
             .AsNoTracking()
@@ -124,7 +120,7 @@ public class QuizAttemptController : Controller
             QuestionCount = quiz.QuizQuestions.Count,
             TotalMarks = quiz.TotalMarks,
             TimeLimitMinutes = quiz.TimeLimitMinutes,
-            StudentName = await GetCurrentStudentNameAsync() ?? string.Empty
+            StudentName = GetCurrentStudentDisplayName() ?? string.Empty
         };
 
         return View(model);
@@ -144,23 +140,14 @@ public class QuizAttemptController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        if (!ModelState.IsValid)
-        {
-            model.Title = quiz.Title ?? "Quiz";
-            model.SubjectName = quiz.Subject?.SubjectName;
-            model.QuestionCount = quiz.QuizQuestions.Count;
-            model.TotalMarks = quiz.TotalMarks;
-            model.TimeLimitMinutes = quiz.TimeLimitMinutes;
-            return View(model);
-        }
-
-        var user = await GetOrCreateStudentUserAsync(model.StudentName.Trim());
-        SetCurrentStudentUserId(user.UserId);
+        var userId = GetCurrentStudentUserId();
+        if (!userId.HasValue)
+            return RedirectToAction("Login", "Account");
 
         var attempt = new QuizAttempt
         {
             QuizId = quiz.QuizId,
-            UserId = user.UserId,
+            UserId = userId.Value,
             AttemptDate = DateTime.UtcNow,
             QuizStatus = 0
         };
@@ -191,11 +178,20 @@ public class QuizAttemptController : Controller
             .OrderBy(qq => qq.DisplayOrder)
             .ToListAsync();
 
+        var timeLimitMinutes = attempt.Quiz?.TimeLimitMinutes ?? 0;
+        var remainingSeconds = 0;
+        if (timeLimitMinutes > 0)
+        {
+            var deadline = attempt.AttemptDate.AddMinutes(timeLimitMinutes);
+            remainingSeconds = Math.Max(0, (int)Math.Ceiling((deadline - DateTime.UtcNow).TotalSeconds));
+        }
+
         var model = new QuizAttemptTakeViewModel
         {
             QuizAttemptId = attempt.QuizAttemptId,
             QuizTitle = attempt.Quiz?.Title ?? "Quiz",
-            TimeLimitMinutes = attempt.Quiz?.TimeLimitMinutes ?? 0,
+            TimeLimitMinutes = timeLimitMinutes,
+            RemainingSeconds = remainingSeconds,
             Questions = questions.Select(qq => new QuizAttemptQuestionViewModel
             {
                 QuestionId = qq.QuestionId,
@@ -315,7 +311,9 @@ public class QuizAttemptController : Controller
 
         await _context.SaveChangesAsync();
 
-        TempData["SuccessMessage"] = "Your quiz attempt has been saved.";
+        TempData["SuccessMessage"] = model.TimedOut
+            ? "Time is up. Your quiz attempt has been saved."
+            : "Your quiz attempt has been saved.";
         return RedirectToAction(nameof(Details), new { id = attempt.QuizAttemptId });
     }
 
@@ -499,31 +497,6 @@ public class QuizAttemptController : Controller
             .FirstOrDefaultAsync(q => q.QuizId == quizId);
     }
 
-    private async Task<User> GetOrCreateStudentUserAsync(string studentName)
-    {
-        var username = studentName.Trim();
-        var existing = await _context.Users
-            .FirstOrDefaultAsync(u => u.Username == username);
-
-        if (existing != null)
-            return existing;
-
-        var user = new User
-        {
-            Username = username,
-            FullName = studentName,
-            Email = $"{Guid.NewGuid():N}@guest.local",
-            PasswordHash = "guest",
-            UserRole = 0,
-            IsActive = true,
-            CreatedDate = DateTime.UtcNow
-        };
-
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-        return user;
-    }
-
     private static int GetPerformanceStatus(decimal percentage) => percentage switch
     {
         >= 90 => 3,
@@ -565,21 +538,15 @@ public class QuizAttemptController : Controller
         ViewBag.Subjects = items;
     }
 
-    private int? GetCurrentStudentUserId() => HttpContext.Session.GetInt32(StudentUserIdSessionKey);
-
-    private void SetCurrentStudentUserId(int userId) =>
-        HttpContext.Session.SetInt32(StudentUserIdSessionKey, userId);
-
-    private async Task<string?> GetCurrentStudentNameAsync()
+    private int? GetCurrentStudentUserId()
     {
-        var userId = GetCurrentStudentUserId();
-        if (!userId.HasValue)
-            return null;
+        var value = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        return int.TryParse(value, out var userId) ? userId : null;
+    }
 
-        var user = await _context.Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.UserId == userId.Value);
-
-        return user?.FullName ?? user?.Username;
+    private string? GetCurrentStudentDisplayName()
+    {
+        return User.FindFirstValue("FullName")
+            ?? User.Identity?.Name;
     }
 }

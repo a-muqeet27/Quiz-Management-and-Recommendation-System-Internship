@@ -7,17 +7,25 @@
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
         <div>
             <h2 class="mb-1">@Model.QuizTitle</h2>
-            <p class="text-muted mb-0">Answer all questions and submit when finished.</p>
+            <p class="text-muted mb-0">Answer all questions. The quiz saves when you click Save Quiz or when time runs out.</p>
         </div>
-        @if (Model.TimeLimitMinutes > 0)
+        @if (Model.HasTimeLimit)
         {
-            <span class="badge bg-secondary fs-6">Time limit: @Model.TimeLimitMinutes min</span>
+            <div id="quiz-timer" class="quiz-timer badge bg-primary fs-5 px-3 py-2" data-remaining="@Model.RemainingSeconds">
+                <span id="quiz-timer-label">Time left:</span>
+                <span id="quiz-timer-value">--:--</span>
+            </div>
         }
     </div>
 
-    <form asp-action="Submit" method="post">
+    <div id="quiz-timer-alert" class="alert alert-warning d-none" role="alert">
+        Time is up. Saving your quiz...
+    </div>
+
+    <form id="quiz-attempt-form" asp-action="Submit" method="post">
         @Html.AntiForgeryToken()
         <input type="hidden" name="QuizAttemptId" value="@Model.QuizAttemptId" />
+        <input type="hidden" name="TimedOut" id="TimedOut" value="false" />
 
         @for (var i = 0; i < Model.Questions.Count; i++)
         {
@@ -64,7 +72,14 @@
         }
 
         <div class="d-flex flex-wrap gap-2">
-            <button type="submit" class="btn btn-success btn-lg">Save Quiz</button>
+            <button type="submit" id="save-quiz-btn" class="btn btn-success btn-lg">Save Quiz</button>
         </div>
     </form>
 </div>
+
+@section Scripts {
+    @if (Model.HasTimeLimit)
+    {
+        <script src="~/js/quiz-attempt-timer.js" asp-append-version="true"></script>
+    }
+}
