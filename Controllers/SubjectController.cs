@@ -6,7 +6,7 @@ using quizportal.Models;
 
 namespace quizportal.Controllers
 {
-    [Authorize(Roles = AppRoles.TeacherName)]
+    [Authorize(Roles = AppRoles.ContentManagers)]
     public class SubjectController : Controller
     {
         private readonly ApplicationDbContext _context;

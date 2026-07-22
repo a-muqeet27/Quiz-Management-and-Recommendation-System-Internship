@@ -8,7 +8,7 @@ using quizportal.Models.ViewModels;
 
 namespace quizportal.Controllers
 {
-    [Authorize(Roles = AppRoles.TeacherName)]
+    [Authorize(Roles = AppRoles.ContentManagers)]
     public class QuestionController : Controller
     {
         private readonly ApplicationDbContext _context;

@@ -1,5 +1,6 @@
 ﻿@{
     ViewData["Title"] = "Home";
+    var isAdmin = User.IsInRole(quizportal.Models.AppRoles.AdminName);
     var isTeacher = User.IsInRole(quizportal.Models.AppRoles.TeacherName);
     var isStudent = User.IsInRole(quizportal.Models.AppRoles.StudentName);
 }
@@ -7,7 +8,11 @@
 <div class="container mt-5">
     <div class="text-center mb-4">
         <h1 class="display-4 fw-bold">Quiz Portal</h1>
-        @if (isTeacher)
+        @if (isAdmin)
+        {
+            <p class="lead">Admin Portal — manage all content</p>
+        }
+        else if (isTeacher)
         {
             <p class="lead">Teacher Dashboard</p>
         }
@@ -17,15 +22,15 @@
         }
     </div>
 
-    @if (isTeacher)
+    @if (isAdmin || isTeacher)
     {
         <div class="row justify-content-center">
             <div class="col-md-3 mb-4">
                 <div class="card shadow h-100">
                     <div class="card-body text-center">
                         <h3>Subjects</h3>
-                        <p>Add subjects for quizzes and topics</p>
-                        <a asp-controller="Subject" asp-action="Create" class="btn btn-outline-primary">Create Subject</a>
+                        <p>@(isAdmin ? "View and manage all subjects" : "Add subjects for quizzes and topics")</p>
+                        <a asp-controller="Subject" asp-action="Index" class="btn btn-outline-primary">Manage Subjects</a>
                     </div>
                 </div>
             </div>
@@ -34,8 +39,8 @@
                 <div class="card shadow h-100">
                     <div class="card-body text-center">
                         <h3>Topics</h3>
-                        <p>Add topics under a subject</p>
-                        <a asp-controller="Topic" asp-action="Create" class="btn btn-outline-primary">Create Topic</a>
+                        <p>@(isAdmin ? "View and manage all topics" : "Add topics under a subject")</p>
+                        <a asp-controller="Topic" asp-action="Index" class="btn btn-outline-primary">Manage Topics</a>
                     </div>
                 </div>
             </div>
@@ -44,8 +49,8 @@
                 <div class="card shadow h-100">
                     <div class="card-body text-center">
                         <h3>Questions</h3>
-                        <p>Build your question bank with choices</p>
-                        <a asp-controller="Question" asp-action="Create" class="btn btn-outline-primary">Create Question</a>
+                        <p>@(isAdmin ? "View and manage all questions" : "Build your question bank with choices")</p>
+                        <a asp-controller="Question" asp-action="Index" class="btn btn-outline-primary">Manage Questions</a>
                     </div>
                 </div>
             </div>
@@ -54,8 +59,8 @@
                 <div class="card shadow h-100">
                     <div class="card-body text-center">
                         <h3>Quizzes</h3>
-                        <p>Build quizzes from your question bank</p>
-                        <a asp-controller="Quiz" asp-action="Create" class="btn btn-outline-primary">Create Quiz</a>
+                        <p>@(isAdmin ? "View and manage all quizzes" : "Build quizzes from your question bank")</p>
+                        <a asp-controller="Quiz" asp-action="QuizList" class="btn btn-outline-primary">Manage Quizzes</a>
                     </div>
                 </div>
             </div>

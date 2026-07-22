@@ -13,11 +13,7 @@
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
             <div class="container">
-                @if (User.IsInRole(quizportal.Models.AppRoles.TeacherName))
-                {
-                    <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">Quiz Portal</a>
-                }
-                else if (User.IsInRole(quizportal.Models.AppRoles.StudentName))
+                @if (User.Identity?.IsAuthenticated == true)
                 {
                     <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">Quiz Portal</a>
                 }
@@ -32,7 +28,25 @@
 
                 <div class="collapse navbar-collapse" id="navbarMenu">
                     <ul class="navbar-nav me-auto">
-                        @if (User.IsInRole(quizportal.Models.AppRoles.TeacherName))
+                        @if (User.IsInRole(quizportal.Models.AppRoles.AdminName))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Subject" asp-action="Index">Subjects</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Topic" asp-action="Index">Topics</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Question" asp-action="Index">Questions</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Quiz" asp-action="QuizList">Quizzes</a>
+                            </li>
+                        }
+                        else if (User.IsInRole(quizportal.Models.AppRoles.TeacherName))
                         {
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
@@ -67,7 +81,9 @@
                     <ul class="navbar-nav align-items-lg-center">
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            var roleLabel = User.IsInRole(quizportal.Models.AppRoles.TeacherName) ? "Teacher" : "Student";
+                            var roleLabel = User.IsInRole(quizportal.Models.AppRoles.AdminName)
+                                ? "Admin"
+                                : User.IsInRole(quizportal.Models.AppRoles.TeacherName) ? "Teacher" : "Student";
                             var displayName = User.FindFirst("FullName")?.Value ?? User.Identity.Name ?? "User";
 
                             <li class="nav-item">

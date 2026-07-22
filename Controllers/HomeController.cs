@@ -15,7 +15,7 @@ namespace quizportal.Controllers
             _context = context;
         }
 
-        [Authorize(Roles = $"{AppRoles.TeacherName},{AppRoles.StudentName}")]
+        [Authorize(Roles = $"{AppRoles.TeacherName},{AppRoles.StudentName},{AppRoles.AdminName}")]
         public IActionResult Index()
         {
             return View();
