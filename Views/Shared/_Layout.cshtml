@@ -1,15 +1,19 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+@{
+    var copiedShareUrl = TempData["CopiedShareUrl"] as string;
+}
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Quiz Portal</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/quizportal.styles.css" asp-append-version="true" />
 </head>
-<body>
+<body data-copied-share-url="@copiedShareUrl">
     <header>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow">
             <div class="container">
@@ -74,6 +78,9 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="QuizAttempt" asp-action="History">Saved Attempts</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="StudentQuestion" asp-action="Index">Questions</a>
                             </li>
                         }
                     </ul>

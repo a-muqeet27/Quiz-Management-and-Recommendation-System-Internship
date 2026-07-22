@@ -1,0 +1,128 @@
+@model quizportal.Models.ViewModels.QuestionDetailViewModel
+@{
+    var question = Model.Question;
+
+    string TypeLabel(int value) => value switch
+    {
+        1 => "Single Correct",
+        0 => "Multiple Correct",
+        _ => "Unknown"
+    };
+
+    string DifficultyLabel(int value) => value switch
+    {
+        0 => "Easy",
+        1 => "Medium",
+        2 => "Hard",
+        _ => "Unknown"
+    };
+}
+
+<div class="card shadow-sm">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h3 class="mb-0">Question #@question.QuestionId</h3>
+                @if (Model.ShowCorrectAnswers)
+                {
+                    <span class="badge @(question.IsActive ? "bg-success" : "bg-secondary")">
+                        @(question.IsActive ? "Active" : "Inactive")
+                    </span>
+                }
+            </div>
+            <div class="card-body p-4">
+                <h5 class="mb-3">@question.QuestionStatement</h5>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted text-uppercase small">Subject</h6>
+                        <p class="mb-0">@(question.Subject?.SubjectName ?? "-")</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted text-uppercase small">Topic</h6>
+                        <p class="mb-0">@(question.Topic?.TopicName ?? "Any topic")</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-muted text-uppercase small">Type</h6>
+                        <p class="mb-0">@TypeLabel(question.QuestionType)</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-muted text-uppercase small">Difficulty</h6>
+                        <p class="mb-0">@DifficultyLabel(question.Difficulty)</p>
+                    </div>
+                    @if (Model.ShowCorrectAnswers)
+                    {
+                        <div class="col-md-4">
+                            <h6 class="text-muted text-uppercase small">Score</h6>
+                            <p class="mb-0">@question.Score</p>
+                        </div>
+                    }
+                </div>
+
+                <h6 class="fw-semibold mb-3">Choices</h6>
+                @if (!Model.ShowCorrectAnswers)
+                {
+                    <p class="text-muted small mb-2">Select your answer when taking a quiz. Correct answers are hidden here.</p>
+                }
+                <ul class="list-group mb-0">
+                    @foreach (var choice in question.Choices)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>@choice.ChoiceText</span>
+                            @if (Model.ShowCorrectAnswers && choice.IsCorrect)
+                            {
+                                <span class="badge bg-success">Correct</span>
+                            }
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Discussion (@quizportal.Models.ViewModels.CommentThreadViewModel.CountAll(Model.Comments))</h5>
+            </div>
+            <div class="card-body p-4">
+                <form asp-controller="Comment" asp-action="Create" method="post" class="mb-4">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="QuestionId" value="@Model.NewComment.QuestionId" />
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold">Add a comment</label>
+                        <textarea name="CommentText" class="form-control" rows="3" maxlength="1000"
+                                  placeholder="Ask a question or share your thoughts..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm">Post Comment</button>
+                </form>
+
+                @if (!Model.Comments.Any())
+                {
+                    <p class="text-muted mb-0">No comments yet. Be the first to start the discussion.</p>
+                }
+                else
+                {
+                    @foreach (var comment in Model.Comments)
+                    {
+                        var commentViewData = new ViewDataDictionary(ViewData);
+                        commentViewData["IsTopLevel"] = true;
+                        <partial name="_CommentItem" model="comment" view-data="commentViewData" />
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="modal fade" id="deleteCommentModal" tabindex="-1" aria-labelledby="deleteCommentModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteCommentModalLabel">Confirm Delete</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Are you sure you want to delete this comment?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger btn-sm" id="confirmDeleteCommentBtn">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>

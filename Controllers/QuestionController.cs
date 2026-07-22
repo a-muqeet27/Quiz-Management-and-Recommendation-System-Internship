@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -5,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using quizportal.Data;
 using quizportal.Models;
 using quizportal.Models.ViewModels;
+using quizportal.Services;
 
 namespace quizportal.Controllers
 {
@@ -91,6 +93,10 @@ namespace quizportal.Controllers
 
         public async Task<IActionResult> Details(int id)
         {
+            var currentUserId = GetCurrentUserId();
+            if (!currentUserId.HasValue)
+                return RedirectToAction("Login", "Account");
+
             var question = await _context.Questions
                 .Include(q => q.Subject)
                 .Include(q => q.Topic)
@@ -100,7 +106,17 @@ namespace quizportal.Controllers
             if (question == null)
                 return NotFound();
 
-            return View(question);
+            var comments = await CommentQueryHelper.LoadCommentThreadsAsync(_context, id, currentUserId.Value);
+
+            var model = new QuestionDetailViewModel
+            {
+                Question = question,
+                ShowCorrectAnswers = true,
+                Comments = comments,
+                NewComment = new CommentInputViewModel { QuestionId = id }
+            };
+
+            return View(model);
         }
 
         public async Task<IActionResult> Edit(int id)
@@ -403,6 +419,12 @@ namespace quizportal.Controllers
             Score = model.Score,
             IsActive = model.IsActive
         };
+
+        private int? GetCurrentUserId()
+        {
+            var value = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(value, out var userId) ? userId : null;
+        }
 
         private static QuestionFormViewModel MapToViewModel(Question question) => new()
         {

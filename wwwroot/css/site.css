@@ -221,3 +221,36 @@ footer {
     font-size: 1.05rem;
     font-weight: 600;
 }
+
+.auth-card {
+    border-radius: 15px;
+}
+
+.auth-card .card-body h2 {
+    font-weight: 700;
+}
+
+.comment-actions {
+    min-width: auto;
+}
+
+.comment-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    min-width: 2.5rem;
+    height: 2.5rem;
+    padding: 0 0.35rem;
+}
+
+.comment-icon-btn .comment-action-count {
+    font-size: 0.7rem;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.comment-bottom-actions {
+    gap: 0.5rem;
+}
+

@@ -10,7 +10,7 @@
         <h1 class="display-4 fw-bold">Quiz Portal</h1>
         @if (isAdmin)
         {
-            <p class="lead">Admin Portal — manage all content</p>
+            <p class="lead">Admin Portal</p>
         }
         else if (isTeacher)
         {
@@ -88,6 +88,17 @@
                     </div>
                 </div>
             </div>
+
+            <div class="col-md-4 mb-4">
+                <div class="card shadow h-100 border-primary">
+                    <div class="card-body text-center">
+                        <h3>Questions</h3>
+                        <p>Review questions and discuss with teachers and classmates</p>
+                        <a asp-controller="StudentQuestion" asp-action="Index" class="btn btn-outline-primary">Browse Questions</a>
+                    </div>
+                </div>
+            </div>
+
         </div>
     }
 </div>

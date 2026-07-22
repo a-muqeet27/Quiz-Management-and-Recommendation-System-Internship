@@ -1,0 +1,147 @@
+@model quizportal.Models.ViewModels.CommentThreadViewModel
+@using quizportal.Models
+@{
+    var isTopLevel = ViewData["IsTopLevel"] as bool? ?? false;
+    var detailsController = User.IsInRole(AppRoles.StudentName) ? "StudentQuestion" : "Question";
+    var shareUrl = $"{Context.Request.Scheme}://{Context.Request.Host}{Url.Action("Details", detailsController, new { id = Model.QuestionId })}#comment-{Model.CommentId}";
+    var userLiked = Model.CurrentUserReaction == CommentReactionTypes.Like;
+    var userDisliked = Model.CurrentUserReaction == CommentReactionTypes.Dislike;
+
+    string RoleBadgeClass(string role) => role switch
+    {
+        "Teacher" => "bg-primary",
+        "Admin" => "bg-dark",
+        _ => "bg-secondary"
+    };
+}
+
+<div id="comment-@Model.CommentId" class="@(isTopLevel ? "border rounded p-3 mb-3" : "mb-3")">
+    <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+        <div class="flex-grow-1">
+            <strong>@Model.AuthorName</strong>
+            <span class="badge @RoleBadgeClass(Model.AuthorRole) ms-1">@Model.AuthorRole</span>
+            <small class="text-muted ms-2">@Model.CreatedDate.ToLocalTime().ToString("g")</small>
+            @if (Model.IsEdited)
+            {
+                <small class="text-muted">(edited)</small>
+            }
+
+            <p class="@(isTopLevel ? "mb-0 mt-2" : "mb-0 mt-1 small") comment-text-@Model.CommentId">@Model.CommentText</p>
+        </div>
+
+        <div class="d-flex flex-row align-items-center gap-1 flex-shrink-0 comment-actions">
+            @if (Model.IsOwnComment)
+            {
+                <button class="btn btn-outline-warning btn-sm comment-icon-btn" type="button"
+                        data-bs-toggle="collapse" data-bs-target="#edit-@Model.CommentId"
+                        title="Edit" aria-label="Edit comment">
+                    <i class="bi bi-pencil"></i>
+                </button>
+            }
+
+            @if (Model.IsOwnComment || User.IsInRole(AppRoles.TeacherName) || User.IsInRole(AppRoles.AdminName))
+            {
+                <form asp-controller="Comment" asp-action="Delete" method="post" class="comment-delete-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.CommentId" />
+                    <input type="hidden" name="questionId" value="@Model.QuestionId" />
+                    <button type="submit" class="btn btn-outline-danger btn-sm comment-icon-btn"
+                            title="Delete" aria-label="Delete comment">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </form>
+            }
+
+            <form asp-controller="Comment" asp-action="React" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="commentId" value="@Model.CommentId" />
+                <input type="hidden" name="questionId" value="@Model.QuestionId" />
+                <input type="hidden" name="reactionType" value="@CommentReactionTypes.Like" />
+                <button type="submit" class="btn btn-sm comment-icon-btn @(userLiked ? "btn-success" : "btn-outline-success")"
+                        title="Like" aria-label="Like comment">
+                    <i class="bi bi-hand-thumbs-up"></i>
+                    @if (Model.LikeCount > 0)
+                    {
+                        <span class="comment-action-count">@Model.LikeCount</span>
+                    }
+                </button>
+            </form>
+
+            <form asp-controller="Comment" asp-action="React" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="commentId" value="@Model.CommentId" />
+                <input type="hidden" name="questionId" value="@Model.QuestionId" />
+                <input type="hidden" name="reactionType" value="@CommentReactionTypes.Dislike" />
+                <button type="submit" class="btn btn-sm comment-icon-btn @(userDisliked ? "btn-danger" : "btn-outline-danger")"
+                        title="Dislike" aria-label="Dislike comment">
+                    <i class="bi bi-hand-thumbs-down"></i>
+                    @if (Model.DislikeCount > 0)
+                    {
+                        <span class="comment-action-count">@Model.DislikeCount</span>
+                    }
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="d-flex align-items-center comment-bottom-actions mb-2">
+        <button class="btn btn-link btn-sm p-0 text-decoration-none comment-icon-btn text-secondary" type="button"
+                data-bs-toggle="collapse" data-bs-target="#reply-@Model.CommentId"
+                title="Reply" aria-label="Reply to comment">
+            <i class="bi bi-reply"></i>
+        </button>
+
+        <form asp-controller="Comment" asp-action="Share" method="post" class="comment-share-form"
+              data-share-url="@shareUrl">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="commentId" value="@Model.CommentId" />
+            <input type="hidden" name="questionId" value="@Model.QuestionId" />
+            <input type="hidden" name="shareUrl" value="@shareUrl" />
+            <button type="submit" class="btn btn-link btn-sm p-0 text-decoration-none comment-icon-btn text-secondary"
+                    title="Share" aria-label="Share comment">
+                <i class="bi bi-share"></i>
+                @if (Model.ShareCount > 0)
+                {
+                    <span class="comment-action-count">@Model.ShareCount</span>
+                }
+            </button>
+        </form>
+    </div>
+
+    @if (Model.IsOwnComment)
+    {
+        <div class="collapse mt-2" id="edit-@Model.CommentId">
+            <form asp-controller="Comment" asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="CommentId" value="@Model.CommentId" />
+                <input type="hidden" name="QuestionId" value="@Model.QuestionId" />
+                <textarea name="CommentText" class="form-control form-control-sm mb-2" rows="3"
+                          maxlength="1000" required>@Model.CommentText</textarea>
+                <button type="submit" class="btn btn-outline-warning btn-sm">Save Changes</button>
+            </form>
+        </div>
+    }
+
+    <div class="collapse mt-2" id="reply-@Model.CommentId">
+        <form asp-controller="Comment" asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="QuestionId" value="@Model.QuestionId" />
+            <input type="hidden" name="ParentCommentId" value="@Model.CommentId" />
+            <textarea name="CommentText" class="form-control form-control-sm mb-2" rows="2"
+                      maxlength="1000" placeholder="Write a reply..." required></textarea>
+            <button type="submit" class="btn btn-outline-primary btn-sm">Post Reply</button>
+        </form>
+    </div>
+
+    @if (Model.Replies.Any())
+    {
+        <div class="ms-4 mt-3 border-start ps-3">
+            @foreach (var reply in Model.Replies)
+            {
+                var replyViewData = new ViewDataDictionary(ViewData);
+                replyViewData["IsTopLevel"] = false;
+                <partial name="_CommentItem" model="reply" view-data="replyViewData" />
+            }
+        </div>
+    }
+</div>

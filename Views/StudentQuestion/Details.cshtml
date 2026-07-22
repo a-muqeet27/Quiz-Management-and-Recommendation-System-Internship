@@ -1,0 +1,28 @@
+@model quizportal.Models.ViewModels.QuestionDetailViewModel
+@{
+    ViewData["Title"] = "Question Discussion";
+}
+
+<div class="container mt-4 mb-5">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="mb-3">
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">&larr; Back to Questions</a>
+    </div>
+
+    <partial name="_QuestionDiscussion" model="Model" />
+</div>

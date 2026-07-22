@@ -7,25 +7,15 @@
 <div class="container mt-5 mb-5">
     <div class="row justify-content-center">
         <div class="col-md-5">
-            <div class="card shadow-sm">
+            <div class="card shadow-sm auth-card">
                 <div class="card-body p-4">
-                    <h2 class="mb-1 text-center" id="login-title">Login</h2>
-                    <p class="text-muted text-center mb-4" id="login-subtitle">Sign in with an existing account</p>
+                    <h2 class="mb-1 text-center">Login</h2>
+                    <p class="text-muted text-center mb-4">Sign in with your username and password</p>
 
                     @if (TempData["SuccessMessage"] != null)
                     {
                         <div class="alert alert-success">@TempData["SuccessMessage"]</div>
                     }
-
-                    <div class="d-grid gap-2 mb-4">
-                        <button type="button" id="admin-login-mode" class="btn btn-dark">
-                            Admin
-                        </button>
-                        <button type="button" id="user-login-mode" class="btn btn-outline-secondary d-none">
-                            Back to User Login
-                        </button>
-                        <small class="text-muted text-center" id="login-hint">Click Admin to enter admin credentials</small>
-                    </div>
 
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
@@ -35,14 +25,14 @@
 
                         <div class="mb-3">
                             <label asp-for="Username" class="form-label"></label>
-                            <input asp-for="Username" id="Username" class="form-control" autocomplete="username" />
+                            <input asp-for="Username" class="form-control" autocomplete="username" />
                             <span asp-validation-for="Username" class="text-danger"></span>
                         </div>
 
                         <div class="mb-4">
                             <label asp-for="Password" class="form-label"></label>
                             <div class="input-group">
-                                <input asp-for="Password" id="Password" class="form-control password-toggle-field" autocomplete="current-password" />
+                                <input asp-for="Password" class="form-control password-toggle-field" autocomplete="current-password" />
                                 <button type="button" class="btn btn-outline-secondary password-toggle-btn" aria-label="Show password" title="Show password">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" class="password-eye-icon">
                                         <path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8M1.173 8a13 13 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5s3.879 1.168 5.168 2.457A13 13 0 0 1 14.828 8q-.086.13-.195.288c-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5s-3.879-1.168-5.168-2.457A13 13 0 0 1 1.172 8z"/>
@@ -56,7 +46,7 @@
                         <button type="submit" class="btn btn-primary w-100 mb-3">Login</button>
                     </form>
 
-                    <p class="text-center mb-0" id="register-link">
+                    <p class="text-center mb-0">
                         No account?
                         <a asp-action="Register">Register</a>
                     </p>
@@ -68,44 +58,4 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
-    <script>
-        (function () {
-            var adminBtn = document.getElementById('admin-login-mode');
-            var userBtn = document.getElementById('user-login-mode');
-            var title = document.getElementById('login-title');
-            var subtitle = document.getElementById('login-subtitle');
-            var hint = document.getElementById('login-hint');
-            var registerLink = document.getElementById('register-link');
-            var username = document.getElementById('Username');
-            var password = document.getElementById('Password');
-
-            function setAdminMode() {
-                if (title) title.textContent = 'Admin Login';
-                if (subtitle) subtitle.textContent = 'Enter admin credentials to continue';
-                if (hint) hint.textContent = 'Enter your admin username and password manually';
-                if (adminBtn) adminBtn.classList.add('d-none');
-                if (userBtn) userBtn.classList.remove('d-none');
-                if (registerLink) registerLink.classList.add('d-none');
-                if (username) {
-                    username.value = '';
-                    username.focus();
-                }
-                if (password) password.value = '';
-            }
-
-            function setUserMode() {
-                if (title) title.textContent = 'Login';
-                if (subtitle) subtitle.textContent = 'Sign in with an existing account';
-                if (hint) hint.textContent = 'Click Admin to enter admin credentials';
-                if (adminBtn) adminBtn.classList.remove('d-none');
-                if (userBtn) userBtn.classList.add('d-none');
-                if (registerLink) registerLink.classList.remove('d-none');
-                if (username) username.value = '';
-                if (password) password.value = '';
-            }
-
-            adminBtn?.addEventListener('click', setAdminMode);
-            userBtn?.addEventListener('click', setUserMode);
-        })();
-    </script>
 }

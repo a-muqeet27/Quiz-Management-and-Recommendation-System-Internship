@@ -1,21 +1,6 @@
-@model quizportal.Models.Question
+@model quizportal.Models.ViewModels.QuestionDetailViewModel
 @{
     ViewData["Title"] = "Question Details";
-
-    string TypeLabel(int value) => value switch
-    {
-        1 => "Single Correct",
-        0 => "Multiple Correct",
-        _ => "Unknown"
-    };
-
-    string DifficultyLabel(int value) => value switch
-    {
-        0 => "Easy",
-        1 => "Medium",
-        2 => "Hard",
-        _ => "Unknown"
-    };
 }
 
 <div class="container mt-4 mb-5">
@@ -27,56 +12,17 @@
         </div>
     }
 
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
     <div class="row g-4">
         <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h3 class="mb-0">Question #@Model.QuestionId</h3>
-                    <span class="badge @(Model.IsActive ? "bg-success" : "bg-secondary")">
-                        @(Model.IsActive ? "Active" : "Inactive")
-                    </span>
-                </div>
-                <div class="card-body p-4">
-                    <h5 class="mb-3">@Model.QuestionStatement</h5>
-
-                    <div class="row g-3 mb-4">
-                        <div class="col-md-6">
-                            <h6 class="text-muted text-uppercase small">Subject</h6>
-                            <p class="mb-0">@(Model.Subject?.SubjectName ?? "-")</p>
-                        </div>
-                        <div class="col-md-6">
-                            <h6 class="text-muted text-uppercase small">Topic</h6>
-                            <p class="mb-0">@(Model.Topic?.TopicName ?? "Any topic")</p>
-                        </div>
-                        <div class="col-md-4">
-                            <h6 class="text-muted text-uppercase small">Type</h6>
-                            <p class="mb-0">@TypeLabel(Model.QuestionType)</p>
-                        </div>
-                        <div class="col-md-4">
-                            <h6 class="text-muted text-uppercase small">Difficulty</h6>
-                            <p class="mb-0">@DifficultyLabel(Model.Difficulty)</p>
-                        </div>
-                        <div class="col-md-4">
-                            <h6 class="text-muted text-uppercase small">Score</h6>
-                            <p class="mb-0">@Model.Score</p>
-                        </div>
-                    </div>
-
-                    <h6 class="fw-semibold mb-3">Choices</h6>
-                    <ul class="list-group">
-                        @foreach (var choice in Model.Choices)
-                        {
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>@choice.ChoiceText</span>
-                                @if (choice.IsCorrect)
-                                {
-                                    <span class="badge bg-success">Correct</span>
-                                }
-                            </li>
-                        }
-                    </ul>
-                </div>
-            </div>
+            <partial name="_QuestionDiscussion" model="Model" />
         </div>
 
         <div class="col-lg-4">
@@ -84,8 +30,8 @@
                 <div class="card-body">
                     <h5 class="mb-3">Actions</h5>
                     <div class="d-grid gap-2">
-                        <a asp-action="Edit" asp-route-id="@Model.QuestionId" class="btn btn-warning">Edit Question</a>
-                        <a asp-action="Delete" asp-route-id="@Model.QuestionId" class="btn btn-outline-danger">Delete Question</a>
+                        <a asp-action="Edit" asp-route-id="@Model.Question.QuestionId" class="btn btn-warning">Edit Question</a>
+                        <a asp-action="Delete" asp-route-id="@Model.Question.QuestionId" class="btn btn-outline-danger">Delete Question</a>
                         <a asp-action="Index" class="btn btn-secondary">Back to List</a>
                     </div>
                 </div>
