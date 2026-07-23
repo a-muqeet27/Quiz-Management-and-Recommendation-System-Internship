@@ -1,6 +1,7 @@
 @model quizportal.Models.ViewModels.QuizFormViewModel
 @{
     var hasSubjects = ViewBag.HasSubjects as bool? ?? Model.Subjects.Any(s => !string.IsNullOrEmpty(s.Value));
+    var isCreate = Model.QuizId == 0;
 }
 
 <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
@@ -87,6 +88,18 @@
                             <span asp-validation-for="TotalMarks" class="text-danger"></span>
                         </div>
 
+                        @if (isCreate)
+                        {
+                            <div class="col-md-6">
+                                <label asp-for="ArrangementCount" class="form-label fw-semibold">Number of Arrangements</label>
+                                <input asp-for="ArrangementCount" type="number" min="1" max="20" class="form-control" id="ArrangementCount" required />
+                                <span asp-validation-for="ArrangementCount" class="text-danger"></span>
+                                <div class="form-text">
+                                    One random question set is drawn. Extra arrangements (same questions, different order) stay under this quiz — they are not added as separate rows in the quiz list.
+                                </div>
+                            </div>
+                        }
+
                         <div class="col-md-6">
                             <label asp-for="TimeLimitMinutes" class="form-label fw-semibold">Time Limit (minutes)</label>
                             <select asp-for="TimeLimitMinutes" class="form-select" id="TimeLimitMinutes">
@@ -143,6 +156,10 @@
                     <h4 class="mb-3">Review &amp; Save</h4>
                     <p class="text-muted mb-4">
                         On save, the app randomly picks questions from the bank using your filters and question count.
+                        @if (isCreate)
+                        {
+                            <text>If arrangements &gt; 1, extra sets are kept under this quiz (not shown separately in the quiz list).</text>
+                        }
                         You can regenerate a new random set anytime from the Generated Questions page.
                     </p>
 
@@ -151,6 +168,10 @@
                         <div><strong>Subject</strong><span id="reviewSubject">-</span></div>
                         <div><strong>Topic</strong><span id="reviewTopic">Any</span></div>
                         <div><strong>Questions to draw</strong><span id="reviewQuestions">-</span></div>
+                        @if (isCreate)
+                        {
+                        <div><strong>Arrangements</strong><span id="reviewArrangements">1</span></div>
+                        }
                         <div><strong>Available in bank</strong><span id="reviewAvailable">-</span></div>
                         <div><strong>Total Marks</strong><span id="reviewMarks">-</span></div>
                         <div><strong>Time Limit</strong><span id="reviewTime">-</span></div>

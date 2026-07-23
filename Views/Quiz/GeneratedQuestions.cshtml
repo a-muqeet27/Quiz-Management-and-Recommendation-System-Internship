@@ -3,6 +3,10 @@
     ViewData["Title"] = "Generated Questions";
     string QuestionDifficultyLabel(int value) => value switch { 0 => "Easy", 1 => "Medium", 2 => "Hard", _ => "Unknown" };
     var assignedQuestions = Model.QuizQuestions.OrderBy(qq => qq.DisplayOrder).ToList();
+    var parentQuizId = ViewBag.ParentQuizId as int? ?? Model.QuizId;
+    var parentQuizTitle = ViewBag.ParentQuizTitle as string ?? Model.Title;
+    var isArrangement = ViewBag.IsArrangement as bool? ?? false;
+    var arrangements = ViewBag.Arrangements as IList<quizportal.Models.Quiz> ?? new List<quizportal.Models.Quiz>();
 }
 
 <div class="container mt-4 mb-5">
@@ -27,19 +31,109 @@
             <h2 class="mb-1">Generated Questions</h2>
             <p class="text-muted mb-0">
                 Quiz: <strong>@Model.Title</strong> · Subject: @(Model.Subject?.SubjectName ?? "-")
+                @if (isArrangement)
+                {
+                    <text>· Arrangement of <a asp-action="GeneratedQuestions" asp-route-id="@parentQuizId">@parentQuizTitle</a></text>
+                }
             </p>
         </div>
-        <div class="d-flex gap-2">
-            <form asp-action="Generate" asp-route-id="@Model.QuizId" method="post" class="m-0">
-                @Html.AntiForgeryToken()
-                <button type="submit" class="btn btn-primary">Generate Other Questions</button>
-            </form>
+        <div class="d-flex gap-2 flex-wrap">
+            @if (!isArrangement)
+            {
+                <form asp-action="Generate" asp-route-id="@Model.QuizId" method="post" class="m-0">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-primary">Generate Other Questions</button>
+                </form>
+            }
             <a asp-action="Details" asp-route-id="@Model.QuizId" class="btn btn-outline-secondary">Quiz Details</a>
+            <a asp-action="QuizList" class="btn btn-outline-secondary">Quiz List</a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body p-4">
+            <h5 class="mb-2">Arrangements for this quiz</h5>
+            <p class="text-muted mb-3">
+                Same questions as <strong>@parentQuizTitle</strong>, each with a different order.
+                Arrangements are not listed in the main quiz list — only here.
+            </p>
+
+            <div class="table-responsive mb-3">
+                <table class="table table-sm table-bordered align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Set</th>
+                            <th>Title</th>
+                            <th>ID</th>
+                            <th width="220">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="@(Model.QuizId == parentQuizId ? "table-primary" : "")">
+                            <td><span class="badge bg-dark">Set 1</span></td>
+                            <td>@parentQuizTitle <small class="text-muted">(main)</small></td>
+                            <td>#@parentQuizId</td>
+                            <td>
+                                @if (Model.QuizId != parentQuizId)
+                                {
+                                    <a asp-action="GeneratedQuestions" asp-route-id="@parentQuizId" class="btn btn-sm btn-outline-primary">View order</a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">Currently viewing</span>
+                                }
+                            </td>
+                        </tr>
+                        @{
+                            var setIndex = 2;
+                        }
+                        @foreach (var set in arrangements)
+                        {
+                            <tr class="@(Model.QuizId == set.QuizId ? "table-primary" : "")">
+                                <td><span class="badge bg-secondary">Set @setIndex</span></td>
+                                <td>@set.Title</td>
+                                <td>#@set.QuizId</td>
+                                <td class="d-flex gap-1 flex-wrap">
+                                    @if (Model.QuizId != set.QuizId)
+                                    {
+                                        <a asp-action="GeneratedQuestions" asp-route-id="@set.QuizId" class="btn btn-sm btn-outline-primary">View order</a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small me-2">Currently viewing</span>
+                                    }
+                                    <form asp-action="DeleteArrangement" asp-route-id="@set.QuizId" method="post" class="m-0"
+                                          onsubmit="return confirm('Delete this arrangement?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            setIndex++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            @if (assignedQuestions.Any() || arrangements.Any() || !isArrangement)
+            {
+                <form asp-action="CreateArrangements" asp-route-id="@parentQuizId" method="post" class="row g-2 align-items-end">
+                    @Html.AntiForgeryToken()
+                    <div class="col-auto">
+                        <label class="form-label fw-semibold" for="arrangementCount">Add more arrangements</label>
+                        <input type="number" name="arrangementCount" id="arrangementCount" class="form-control" value="1" min="1" max="20" required />
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-success">Create Shuffled Sets</button>
+                    </div>
+                </form>
+            }
         </div>
     </div>
 
     <div class="card shadow-sm">
         <div class="card-body p-4">
+            <h5 class="mb-3">Question order @(isArrangement ? $"(this set)" : "(Set 1)")</h5>
 
             @if (!assignedQuestions.Any())
             {

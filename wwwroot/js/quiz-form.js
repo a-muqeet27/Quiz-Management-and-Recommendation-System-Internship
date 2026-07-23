@@ -16,6 +16,7 @@
         subject: document.getElementById('SubjectId'),
         topic: document.getElementById('TopicId'),
         questions: document.getElementById('NoOfQuestions'),
+        arrangements: document.getElementById('ArrangementCount'),
         marks: document.getElementById('TotalMarks'),
         time: document.getElementById('TimeLimitMinutes'),
         difficulty: document.getElementById('DifficultyFilter'),
@@ -44,6 +45,10 @@
         document.getElementById('reviewSubject').textContent = selectedText(fields.subject);
         document.getElementById('reviewTopic').textContent = selectedText(fields.topic).replace('-- Any Topic --', 'Any');
         document.getElementById('reviewQuestions').textContent = fields.questions?.value || '-';
+        const reviewArrangements = document.getElementById('reviewArrangements');
+        if (reviewArrangements) {
+            reviewArrangements.textContent = fields.arrangements?.value || '1';
+        }
         document.getElementById('reviewAvailable').textContent = availableCount;
         document.getElementById('reviewMarks').textContent = fields.marks?.value || '-';
         document.getElementById('reviewTime').textContent = fields.time?.value ? `${fields.time.value} minutes` : '-';
@@ -110,6 +115,7 @@
 
         if (step === 2) {
             if (!fields.questions?.reportValidity()) return false;
+            if (fields.arrangements && !fields.arrangements.reportValidity()) return false;
             if (!fields.marks?.reportValidity()) return false;
 
             const requested = Number(fields.questions?.value || 0);

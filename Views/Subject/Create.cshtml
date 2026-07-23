@@ -4,6 +4,20 @@
 }
 
 <div class="container mt-4 mb-5">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <span>@TempData["SuccessMessage"]</span>
+                <div class="d-flex gap-2 align-items-center">
+                    <a href="#createForm" class="btn btn-sm btn-success">Add More Subject</a>
+                    <a asp-action="Index" class="btn btn-sm btn-outline-success">View Subjects</a>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+    }
+
     <div class="row justify-content-center">
         <div class="col-lg-7">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -14,7 +28,7 @@
                 <a asp-action="Index" class="btn btn-outline-secondary">Back</a>
             </div>
 
-            <div class="card shadow-sm">
+            <div class="card shadow-sm" id="createForm">
                 <div class="card-body p-4">
                     <form asp-action="Create" method="post">
                         @Html.AntiForgeryToken()
@@ -22,7 +36,7 @@
 
                         <div class="mb-3">
                             <label asp-for="SubjectName" class="form-label fw-semibold">Subject Name</label>
-                            <input asp-for="SubjectName" class="form-control" maxlength="100" placeholder="e.g. Mathematics" required />
+                            <input asp-for="SubjectName" class="form-control" maxlength="100" placeholder="e.g. Mathematics" required autofocus />
                             <span asp-validation-for="SubjectName" class="text-danger"></span>
                         </div>
 
@@ -32,7 +46,7 @@
                             <span asp-validation-for="SubjectDescription" class="text-danger"></span>
                         </div>
 
-                        <div class="d-flex gap-2">
+                        <div class="d-flex gap-2 flex-wrap">
                             <button type="submit" class="btn btn-primary">Save Subject</button>
                             <a asp-action="Index" class="btn btn-secondary">Cancel</a>
                         </div>

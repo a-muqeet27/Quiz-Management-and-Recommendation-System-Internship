@@ -29,7 +29,17 @@ public partial class Quiz
 
     public int? TopicId { get; set; }
 
+    /// <summary>
+    /// When set, this quiz is an arrangement (same questions, different order)
+    /// of the parent quiz and is hidden from the main quiz list.
+    /// </summary>
+    public int? ParentQuizId { get; set; }
+
     public virtual User? CreatedByNavigation { get; set; }
+
+    public virtual Quiz? ParentQuiz { get; set; }
+
+    public virtual ICollection<Quiz> ArrangementQuizzes { get; set; } = new List<Quiz>();
 
     public virtual ICollection<QuizAttempt> QuizAttempts { get; set; } = new List<QuizAttempt>();
 

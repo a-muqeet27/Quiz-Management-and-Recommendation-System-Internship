@@ -24,6 +24,8 @@ namespace quizportal.Controllers
                 .Include(q => q.Subject)
                 .Include(q => q.Topic)
                 .Include(q => q.QuizQuestions)
+                .Include(q => q.ArrangementQuizzes)
+                .Where(q => q.ParentQuizId == null)
                 .AsQueryable();
 
             if (subjectId.HasValue && subjectId > 0)
@@ -53,17 +55,45 @@ namespace quizportal.Controllers
 
             if (ModelState.IsValid)
             {
-                var quiz = MapToEntity(model);
-                quiz.CreatedDate = DateTime.UtcNow;
+                var arrangementCount = Math.Clamp(model.ArrangementCount, 1, 20);
+                var baseTitle = model.Title?.Trim() ?? "Quiz";
+                var questionIds = await SelectRandomQuestionIdsAsync(
+                    model.SubjectId,
+                    model.TopicId,
+                    model.DifficultyFilter,
+                    model.QuestionTypeFilter,
+                    model.NoOfQuestions);
 
-                _context.Quizzes.Add(quiz);
+                var parentQuiz = MapToEntity(model);
+                parentQuiz.Title = baseTitle;
+                parentQuiz.CreatedDate = DateTime.UtcNow;
+                parentQuiz.ParentQuizId = null;
+
+                _context.Quizzes.Add(parentQuiz);
                 await _context.SaveChangesAsync();
 
-                await GenerateRandomQuestionsAsync(quiz);
+                await AssignQuestionsToQuizAsync(parentQuiz.QuizId, questionIds, shuffle: false);
                 await _context.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = $"Quiz \"{quiz.Title}\" was created with {quiz.NoOfQuestions} randomly selected questions.";
-                return RedirectToAction(nameof(GeneratedQuestions), new { id = quiz.QuizId });
+                for (var set = 2; set <= arrangementCount; set++)
+                {
+                    var arrangement = MapToEntity(model);
+                    arrangement.Title = $"{baseTitle} - Set {set}";
+                    arrangement.CreatedDate = DateTime.UtcNow;
+                    arrangement.ParentQuizId = parentQuiz.QuizId;
+
+                    _context.Quizzes.Add(arrangement);
+                    await _context.SaveChangesAsync();
+
+                    await AssignQuestionsToQuizAsync(arrangement.QuizId, questionIds, shuffle: true);
+                    await _context.SaveChangesAsync();
+                }
+
+                TempData["SuccessMessage"] = arrangementCount == 1
+                    ? $"Quiz \"{parentQuiz.Title}\" was created with {parentQuiz.NoOfQuestions} randomly selected questions."
+                    : $"Created quiz \"{parentQuiz.Title}\" with {arrangementCount} arrangements (same questions, different order). Sets are listed on this quiz.";
+
+                return RedirectToAction(nameof(GeneratedQuestions), new { id = parentQuiz.QuizId });
             }
 
             await PopulateFormDropdownsAsync(model, model.SubjectId, model.TopicId);
@@ -96,6 +126,22 @@ namespace quizportal.Controllers
 
             if (quiz == null)
                 return NotFound();
+
+            var parentId = quiz.ParentQuizId ?? quiz.QuizId;
+            var parent = parentId == quiz.QuizId
+                ? quiz
+                : await _context.Quizzes.AsNoTracking().FirstOrDefaultAsync(q => q.QuizId == parentId);
+
+            var arrangements = await _context.Quizzes
+                .AsNoTracking()
+                .Where(q => q.ParentQuizId == parentId)
+                .OrderBy(q => q.QuizId)
+                .ToListAsync();
+
+            ViewBag.ParentQuizId = parentId;
+            ViewBag.ParentQuizTitle = parent?.Title ?? quiz.Title;
+            ViewBag.IsArrangement = quiz.ParentQuizId.HasValue;
+            ViewBag.Arrangements = arrangements;
 
             return View(quiz);
         }
@@ -130,6 +176,79 @@ namespace quizportal.Controllers
             TempData["SuccessMessage"] =
                 $"Generated a new random set of {quiz.NoOfQuestions} questions.";
             return RedirectToAction(nameof(GeneratedQuestions), new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateArrangements(int id, int arrangementCount = 1)
+        {
+            arrangementCount = Math.Clamp(arrangementCount, 1, 20);
+
+            var source = await _context.Quizzes
+                .Include(q => q.QuizQuestions)
+                .FirstOrDefaultAsync(q => q.QuizId == id);
+
+            if (source == null)
+                return NotFound();
+
+            var parentId = source.ParentQuizId ?? source.QuizId;
+            var parent = parentId == source.QuizId
+                ? source
+                : await _context.Quizzes.FirstOrDefaultAsync(q => q.QuizId == parentId);
+
+            if (parent == null)
+                return NotFound();
+
+            // Prefer the parent's question set; fall back to the quiz being viewed
+            var questionSource = parent.QuizId == source.QuizId
+                ? source
+                : await _context.Quizzes
+                    .Include(q => q.QuizQuestions)
+                    .FirstOrDefaultAsync(q => q.QuizId == parentId) ?? source;
+
+            var questionIds = questionSource.QuizQuestions
+                .OrderBy(qq => qq.DisplayOrder)
+                .Select(qq => qq.QuestionId)
+                .ToList();
+
+            if (questionIds.Count == 0)
+            {
+                TempData["ErrorMessage"] = "This quiz has no questions to rearrange. Generate questions first.";
+                return RedirectToAction(nameof(GeneratedQuestions), new { id = parentId });
+            }
+
+            var baseTitle = StripSetSuffix(parent.Title) ?? "Quiz";
+            var nextSetNumber = await GetNextSetNumberAsync(parentId);
+
+            for (var i = 0; i < arrangementCount; i++)
+            {
+                var setNumber = nextSetNumber + i;
+                var quiz = new Quiz
+                {
+                    SubjectId = parent.SubjectId,
+                    TopicId = parent.TopicId,
+                    Title = $"{baseTitle} - Set {setNumber}",
+                    NoOfQuestions = parent.NoOfQuestions,
+                    TimeLimitMinutes = parent.TimeLimitMinutes,
+                    TotalMarks = parent.TotalMarks,
+                    DifficultyFilter = parent.DifficultyFilter,
+                    QuestionTypeFilter = parent.QuestionTypeFilter,
+                    IsActive = parent.IsActive,
+                    CreatedBy = parent.CreatedBy,
+                    CreatedDate = DateTime.UtcNow,
+                    ParentQuizId = parentId
+                };
+
+                _context.Quizzes.Add(quiz);
+                await _context.SaveChangesAsync();
+
+                await AssignQuestionsToQuizAsync(quiz.QuizId, questionIds, shuffle: true);
+                await _context.SaveChangesAsync();
+            }
+
+            TempData["SuccessMessage"] =
+                $"Created {arrangementCount} arrangement(s) under this quiz (same questions, different order).";
+            return RedirectToAction(nameof(GeneratedQuestions), new { id = parentId });
         }
 
         public async Task<IActionResult> Edit(int id)
@@ -206,15 +325,31 @@ namespace quizportal.Controllers
             var quiz = await _context.Quizzes
                 .Include(q => q.QuizQuestions)
                 .Include(q => q.QuizAttempts)
+                .Include(q => q.ArrangementQuizzes)
+                    .ThenInclude(a => a.QuizAttempts)
+                .Include(q => q.ArrangementQuizzes)
+                    .ThenInclude(a => a.QuizQuestions)
                 .FirstOrDefaultAsync(q => q.QuizId == id);
 
             if (quiz == null)
                 return NotFound();
 
-            if (quiz.QuizAttempts.Any())
+            if (quiz.ParentQuizId.HasValue)
             {
-                TempData["ErrorMessage"] = "Cannot delete this quiz because it has attempts.";
+                TempData["ErrorMessage"] = "Delete arrangements from the parent quiz’s Generated Questions page, or delete the parent quiz.";
+                return RedirectToAction(nameof(GeneratedQuestions), new { id = quiz.ParentQuizId });
+            }
+
+            if (quiz.QuizAttempts.Any() || quiz.ArrangementQuizzes.Any(a => a.QuizAttempts.Any()))
+            {
+                TempData["ErrorMessage"] = "Cannot delete this quiz because it (or one of its arrangements) has attempts.";
                 return RedirectToAction(nameof(QuizList));
+            }
+
+            foreach (var arrangement in quiz.ArrangementQuizzes.ToList())
+            {
+                _context.QuizQuestions.RemoveRange(arrangement.QuizQuestions);
+                _context.Quizzes.Remove(arrangement);
             }
 
             _context.QuizQuestions.RemoveRange(quiz.QuizQuestions);
@@ -223,6 +358,40 @@ namespace quizportal.Controllers
 
             TempData["SuccessMessage"] = "Quiz deleted successfully.";
             return RedirectToAction(nameof(QuizList));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteArrangement(int id)
+        {
+            var quiz = await _context.Quizzes
+                .Include(q => q.QuizQuestions)
+                .Include(q => q.QuizAttempts)
+                .FirstOrDefaultAsync(q => q.QuizId == id);
+
+            if (quiz == null)
+                return NotFound();
+
+            if (!quiz.ParentQuizId.HasValue)
+            {
+                TempData["ErrorMessage"] = "This is the main quiz, not an arrangement.";
+                return RedirectToAction(nameof(GeneratedQuestions), new { id });
+            }
+
+            var parentId = quiz.ParentQuizId.Value;
+
+            if (quiz.QuizAttempts.Any())
+            {
+                TempData["ErrorMessage"] = "Cannot delete this arrangement because it has attempts.";
+                return RedirectToAction(nameof(GeneratedQuestions), new { id = parentId });
+            }
+
+            _context.QuizQuestions.RemoveRange(quiz.QuizQuestions);
+            _context.Quizzes.Remove(quiz);
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Arrangement deleted.";
+            return RedirectToAction(nameof(GeneratedQuestions), new { id = parentId });
         }
 
         [HttpGet]
@@ -255,6 +424,14 @@ namespace quizportal.Controllers
             if (model.NoOfQuestions < 1)
                 ModelState.AddModelError(nameof(model.NoOfQuestions), "Number of questions must be at least 1.");
 
+            if (model.QuizId == 0)
+            {
+                if (model.ArrangementCount < 1)
+                    ModelState.AddModelError(nameof(model.ArrangementCount), "Number of arrangements must be at least 1.");
+                else if (model.ArrangementCount > 20)
+                    ModelState.AddModelError(nameof(model.ArrangementCount), "Number of arrangements cannot exceed 20.");
+            }
+
             if (model.TotalMarks < 1)
                 ModelState.AddModelError(nameof(model.TotalMarks), "Total marks must be at least 1.");
 
@@ -276,35 +453,96 @@ namespace quizportal.Controllers
 
         private async Task GenerateRandomQuestionsAsync(Quiz quiz)
         {
+            var randomIds = await SelectRandomQuestionIdsAsync(
+                quiz.SubjectId,
+                quiz.TopicId,
+                quiz.DifficultyFilter,
+                quiz.QuestionTypeFilter,
+                quiz.NoOfQuestions);
+
+            await AssignQuestionsToQuizAsync(quiz.QuizId, randomIds, shuffle: false);
+        }
+
+        private async Task<List<int>> SelectRandomQuestionIdsAsync(
+            int subjectId,
+            int? topicId,
+            int? difficulty,
+            int? questionType,
+            int take)
+        {
+            var candidateIds = await BuildQuestionQuery(subjectId, topicId, difficulty, questionType)
+                .Select(q => q.QuestionId)
+                .ToListAsync();
+
+            return candidateIds
+                .OrderBy(_ => Guid.NewGuid())
+                .Take(take)
+                .ToList();
+        }
+
+        private async Task AssignQuestionsToQuizAsync(int quizId, IReadOnlyList<int> questionIds, bool shuffle)
+        {
             var existing = await _context.QuizQuestions
-                .Where(qq => qq.QuizId == quiz.QuizId)
+                .Where(qq => qq.QuizId == quizId)
                 .ToListAsync();
 
             if (existing.Count > 0)
                 _context.QuizQuestions.RemoveRange(existing);
 
-            var candidateIds = await BuildQuestionQuery(
-                    quiz.SubjectId,
-                    quiz.TopicId,
-                    quiz.DifficultyFilter,
-                    quiz.QuestionTypeFilter)
-                .Select(q => q.QuestionId)
-                .ToListAsync();
+            var ordered = shuffle
+                ? questionIds.OrderBy(_ => Guid.NewGuid()).ToList()
+                : questionIds.ToList();
 
-            var randomIds = candidateIds
-                .OrderBy(_ => Guid.NewGuid())
-                .Take(quiz.NoOfQuestions)
-                .ToList();
-
-            for (var i = 0; i < randomIds.Count; i++)
+            for (var i = 0; i < ordered.Count; i++)
             {
                 _context.QuizQuestions.Add(new QuizQuestion
                 {
-                    QuizId = quiz.QuizId,
-                    QuestionId = randomIds[i],
+                    QuizId = quizId,
+                    QuestionId = ordered[i],
                     DisplayOrder = i + 1
                 });
             }
+        }
+
+        private static string? StripSetSuffix(string? title)
+        {
+            if (string.IsNullOrWhiteSpace(title))
+                return title;
+
+            var trimmed = title.Trim();
+            var marker = " - Set ";
+            var idx = trimmed.LastIndexOf(marker, StringComparison.OrdinalIgnoreCase);
+            if (idx <= 0)
+                return trimmed;
+
+            var suffix = trimmed[(idx + marker.Length)..];
+            if (suffix.Length > 0 && suffix.All(char.IsDigit))
+                return trimmed[..idx];
+
+            return trimmed;
+        }
+
+        private async Task<int> GetNextSetNumberAsync(int parentQuizId)
+        {
+            var titles = await _context.Quizzes
+                .Where(q => q.ParentQuizId == parentQuizId && q.Title != null)
+                .Select(q => q.Title!)
+                .ToListAsync();
+
+            var maxSet = 1; // parent quiz is Set 1
+            foreach (var title in titles)
+            {
+                var marker = " - Set ";
+                var idx = title.LastIndexOf(marker, StringComparison.OrdinalIgnoreCase);
+                if (idx < 0)
+                    continue;
+
+                var suffix = title[(idx + marker.Length)..];
+                if (int.TryParse(suffix, out var n))
+                    maxSet = Math.Max(maxSet, n);
+            }
+
+            return maxSet + 1;
         }
 
         private IQueryable<Question> BuildQuestionQuery(int subjectId, int? topicId, int? difficulty, int? questionType)

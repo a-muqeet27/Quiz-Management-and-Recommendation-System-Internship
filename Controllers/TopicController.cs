@@ -83,7 +83,7 @@ namespace quizportal.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["SuccessMessage"] = $"Topic \"{topic.TopicName}\" created successfully.";
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Create), new { subjectId = topic.SubjectId });
             }
 
             await PopulateSubjectsAsync(topic.SubjectId, includeEmptyOption: true, emptyText: "-- Select Subject --");

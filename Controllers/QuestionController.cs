@@ -42,11 +42,12 @@ namespace quizportal.Controllers
             return View(questions);
         }
 
-        public async Task<IActionResult> Create(int? subjectId = null)
+        public async Task<IActionResult> Create(int? subjectId = null, int? topicId = null)
         {
             var model = new QuestionFormViewModel
             {
                 SubjectId = subjectId ?? 0,
+                TopicId = topicId,
                 Choices =
                 [
                     new QuestionChoiceInput(),
@@ -83,7 +84,7 @@ namespace quizportal.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["SuccessMessage"] = "Question created successfully.";
-                return RedirectToAction(nameof(Details), new { id = question.QuestionId });
+                return RedirectToAction(nameof(Create), new { subjectId = question.SubjectId, topicId = question.TopicId });
             }
 
             EnsureChoiceSlots(model);

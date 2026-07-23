@@ -176,6 +176,13 @@ public partial class ApplicationDbContext : DbContext
             entity.HasOne(d => d.Topic).WithMany(p => p.Quizzes)
                 .HasForeignKey(d => d.TopicId)
                 .HasConstraintName("FK_Quiz_Topic");
+
+            entity.HasIndex(e => e.ParentQuizId, "IX_Quiz_ParentQuizId");
+
+            entity.HasOne(d => d.ParentQuiz).WithMany(p => p.ArrangementQuizzes)
+                .HasForeignKey(d => d.ParentQuizId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Quiz_ParentQuiz");
         });
 
         modelBuilder.Entity<QuizAttempt>(entity =>

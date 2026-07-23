@@ -55,7 +55,7 @@ namespace quizportal.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["SuccessMessage"] = $"Subject \"{subject.SubjectName}\" created successfully.";
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Create));
             }
 
             return View(subject);

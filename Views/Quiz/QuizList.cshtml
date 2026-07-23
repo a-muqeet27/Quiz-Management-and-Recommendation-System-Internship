@@ -69,6 +69,7 @@
                         <th>Subject</th>
                         <th>Topic</th>
                         <th>Questions</th>
+                        <th>Sets</th>
                         <th>Generated</th>
                         <th>Marks</th>
                         <th>Time</th>
@@ -85,6 +86,7 @@
                             <td>@(quiz.Subject?.SubjectName ?? "-")</td>
                             <td>@(quiz.Topic?.TopicName ?? "Any")</td>
                             <td>@quiz.NoOfQuestions</td>
+                            <td>@(1 + quiz.ArrangementQuizzes.Count)</td>
                             <td>@quiz.QuizQuestions.Count</td>
                             <td>@quiz.TotalMarks</td>
                             <td>@quiz.TimeLimitMinutes min</td>
