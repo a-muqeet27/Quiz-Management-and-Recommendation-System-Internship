@@ -66,7 +66,7 @@ public class AccountController : Controller
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        TempData["SuccessMessage"] = "Account created. Please log in.";
+        TempData["SuccessMessage"] = "Account Created. Please Log in.";
         return RedirectToAction(nameof(Login));
     }
 

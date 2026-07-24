@@ -46,16 +46,16 @@
                 </form>
             }
             <a asp-action="Details" asp-route-id="@Model.QuizId" class="btn btn-outline-secondary">Quiz Details</a>
+            <a asp-action="Assignments" asp-route-id="@parentQuizId" class="btn btn-outline-success">Assignments</a>
             <a asp-action="QuizList" class="btn btn-outline-secondary">Quiz List</a>
         </div>
     </div>
 
     <div class="card shadow-sm mb-4">
         <div class="card-body p-4">
-            <h5 class="mb-2">Arrangements for this quiz</h5>
+            <h5 class="mb-2">Shuffled Questions for this Quiz</h5>
             <p class="text-muted mb-3">
                 Same questions as <strong>@parentQuizTitle</strong>, each with a different order.
-                Arrangements are not listed in the main quiz list — only here.
             </p>
 
             <div class="table-responsive mb-3">
@@ -120,11 +120,11 @@
                 <form asp-action="CreateArrangements" asp-route-id="@parentQuizId" method="post" class="row g-2 align-items-end">
                     @Html.AntiForgeryToken()
                     <div class="col-auto">
-                        <label class="form-label fw-semibold" for="arrangementCount">Add more arrangements</label>
+                        <label class="form-label fw-semibold" for="arrangementCount">Generate Shuffled but Same Questions</label>
                         <input type="number" name="arrangementCount" id="arrangementCount" class="form-control" value="1" min="1" max="20" required />
                     </div>
                     <div class="col-auto">
-                        <button type="submit" class="btn btn-success">Create Shuffled Sets</button>
+                        <button type="submit" class="btn btn-success">Create Shuffled Question</button>
                     </div>
                 </form>
             }
@@ -133,7 +133,7 @@
 
     <div class="card shadow-sm">
         <div class="card-body p-4">
-            <h5 class="mb-3">Question order @(isArrangement ? $"(this set)" : "(Set 1)")</h5>
+            <h5 class="mb-3">Question Order @(isArrangement ? $"(this set)" : "(Set 1)")</h5>
 
             @if (!assignedQuestions.Any())
             {

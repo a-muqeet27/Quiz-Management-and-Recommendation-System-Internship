@@ -83,7 +83,7 @@ namespace quizportal.Controllers
                 _context.Questions.Add(question);
                 await _context.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = "Question created successfully.";
+                TempData["SuccessMessage"] = "Question Created Successfully.";
                 return RedirectToAction(nameof(Create), new { subjectId = question.SubjectId, topicId = question.TopicId });
             }
 
@@ -244,8 +244,10 @@ namespace quizportal.Controllers
             if (string.IsNullOrWhiteSpace(model.QuestionStatement))
                 ModelState.AddModelError(nameof(model.QuestionStatement), "Question statement is required.");
 
-            if (model.Score < 1)
-                ModelState.AddModelError(nameof(model.Score), "Score must be at least 1.");
+            if (model.Score <= 0)
+                ModelState.AddModelError(nameof(model.Score), "Score must be greater than 0.");
+            else if (model.Score > 100)
+                ModelState.AddModelError(nameof(model.Score), "Score cannot exceed 100.");
 
             // Database CHECK constraint allows only 0 or 1 for QuestionType.
             // 1 = single correct, 0 = multiple correct.

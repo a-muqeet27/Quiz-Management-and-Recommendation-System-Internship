@@ -9,9 +9,9 @@ public partial class QuizScore
 
     public int QuizAttemptId { get; set; }
 
-    public int TotalMarks { get; set; }
+    public decimal TotalMarks { get; set; }
 
-    public int ObtainedMarks { get; set; }
+    public decimal ObtainedMarks { get; set; }
 
     public decimal QuizPercentage { get; set; }
 

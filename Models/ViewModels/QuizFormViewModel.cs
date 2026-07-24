@@ -22,7 +22,7 @@ public class QuizFormViewModel
 
     public int TimeLimitMinutes { get; set; } = 15;
 
-    public int TotalMarks { get; set; } = 100;
+    public decimal TotalMarks { get; set; } = 100;
 
     public int? DifficultyFilter { get; set; }
 

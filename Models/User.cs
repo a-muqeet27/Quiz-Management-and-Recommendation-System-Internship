@@ -33,6 +33,8 @@ public partial class User
 
     public virtual ICollection<Quiz> Quizzes { get; set; } = new List<Quiz>();
 
+    public virtual ICollection<QuizSetAssignment> QuizSetAssignments { get; set; } = new List<QuizSetAssignment>();
+
     public virtual ICollection<Subject> Subjects { get; set; } = new List<Subject>();
 
     public virtual ICollection<UserFavouriteQuestion> UserFavouriteQuestions { get; set; } = new List<UserFavouriteQuestion>();

@@ -25,7 +25,7 @@ public class QuestionFormViewModel
 
     public int Difficulty { get; set; } = 0;
 
-    public int Score { get; set; } = 1;
+    public decimal Score { get; set; } = 1;
 
     public bool IsActive { get; set; } = true;
 

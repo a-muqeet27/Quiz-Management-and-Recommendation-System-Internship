@@ -17,7 +17,7 @@ public partial class QuizChoice
 
     public bool IsCorrect { get; set; }
 
-    public int MarksObtained { get; set; }
+    public decimal MarksObtained { get; set; }
 
     public int TimeSpent { get; set; }
 

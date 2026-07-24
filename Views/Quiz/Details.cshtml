@@ -82,6 +82,7 @@
                     <h5 class="mb-3">Actions</h5>
                     <div class="d-grid gap-2">
                         <a asp-action="GeneratedQuestions" asp-route-id="@Model.QuizId" class="btn btn-primary">View Questions</a>
+                        <a asp-action="Assignments" asp-route-id="@(Model.ParentQuizId ?? Model.QuizId)" class="btn btn-success">Set Assignments</a>
                         <a asp-action="Edit" asp-route-id="@Model.QuizId" class="btn btn-warning">Edit Quiz</a>
                         <a asp-action="Delete" asp-route-id="@Model.QuizId" class="btn btn-outline-danger">Delete Quiz</a>
                         <a asp-action="QuizList" class="btn btn-secondary">Back to List</a>

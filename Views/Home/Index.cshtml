@@ -29,7 +29,7 @@
                 <div class="card shadow h-100">
                     <div class="card-body text-center">
                         <h3>Subjects</h3>
-                        <p>@(isAdmin ? "View and manage all subjects" : "Add subjects for quizzes and topics")</p>
+                        <p>@(isAdmin ? "View and Manage all Subjects" : "Add Subjects for Quizzes")</p>
                         <a asp-controller="Subject" asp-action="Index" class="btn btn-outline-primary">Manage Subjects</a>
                     </div>
                 </div>
@@ -39,7 +39,7 @@
                 <div class="card shadow h-100">
                     <div class="card-body text-center">
                         <h3>Topics</h3>
-                        <p>@(isAdmin ? "View and manage all topics" : "Add topics under a subject")</p>
+                        <p>@(isAdmin ? "View and Manage all Topics" : "Add Topics under a Subject")</p>
                         <a asp-controller="Topic" asp-action="Index" class="btn btn-outline-primary">Manage Topics</a>
                     </div>
                 </div>
@@ -49,7 +49,7 @@
                 <div class="card shadow h-100">
                     <div class="card-body text-center">
                         <h3>Questions</h3>
-                        <p>@(isAdmin ? "View and manage all questions" : "Build your question bank with choices")</p>
+                        <p>@(isAdmin ? "View and Manage all Questions" : "Build your Question Bank with Choices")</p>
                         <a asp-controller="Question" asp-action="Index" class="btn btn-outline-primary">Manage Questions</a>
                     </div>
                 </div>
@@ -59,7 +59,7 @@
                 <div class="card shadow h-100">
                     <div class="card-body text-center">
                         <h3>Quizzes</h3>
-                        <p>@(isAdmin ? "View and manage all quizzes" : "Build quizzes from your question bank")</p>
+                        <p>@(isAdmin ? "View and Manage all Quizzes" : "Build Quizzes from your Question Bank")</p>
                         <a asp-controller="Quiz" asp-action="QuizList" class="btn btn-outline-primary">Manage Quizzes</a>
                     </div>
                 </div>
@@ -73,7 +73,7 @@
                 <div class="card shadow h-100 border-success">
                     <div class="card-body text-center">
                         <h3>Attempt Quiz</h3>
-                        <p>Browse active quizzes and test your knowledge</p>
+                        <p>Browse Quizzes and Test your Knowledge</p>
                         <a asp-controller="QuizAttempt" asp-action="Index" class="btn btn-success">Start Quiz</a>
                     </div>
                 </div>
@@ -82,8 +82,8 @@
             <div class="col-md-4 mb-4">
                 <div class="card shadow h-100">
                     <div class="card-body text-center">
-                        <h3>History</h3>
-                        <p>View your past quiz attempts and scores</p>
+                        <h3>Quiz Attempts</h3>
+                        <p>View your Past Quiz Attempts and Scores</p>
                         <a asp-controller="QuizAttempt" asp-action="History" class="btn btn-outline-primary">View Attempts</a>
                     </div>
                 </div>
@@ -93,7 +93,7 @@
                 <div class="card shadow h-100 border-primary">
                     <div class="card-body text-center">
                         <h3>Questions</h3>
-                        <p>Review questions and discuss with teachers and classmates</p>
+                        <p>Review Questions and Discuss with Teachers and Classmates</p>
                         <a asp-controller="StudentQuestion" asp-action="Index" class="btn btn-outline-primary">Browse Questions</a>
                     </div>
                 </div>

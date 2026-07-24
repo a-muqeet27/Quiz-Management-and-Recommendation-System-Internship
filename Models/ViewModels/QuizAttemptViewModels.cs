@@ -12,7 +12,7 @@ public class QuizAttemptStartViewModel
 
     public int QuestionCount { get; set; }
 
-    public int TotalMarks { get; set; }
+    public decimal TotalMarks { get; set; }
 
     public int TimeLimitMinutes { get; set; }
 
@@ -44,7 +44,7 @@ public class QuizAttemptQuestionViewModel
 
     public int QuestionType { get; set; }
 
-    public int Score { get; set; }
+    public decimal Score { get; set; }
 
     public int DisplayOrder { get; set; }
 
@@ -84,9 +84,9 @@ public class QuizAttemptResultViewModel
 
     public string StudentName { get; set; } = string.Empty;
 
-    public int TotalMarks { get; set; }
+    public decimal TotalMarks { get; set; }
 
-    public int ObtainedMarks { get; set; }
+    public decimal ObtainedMarks { get; set; }
 
     public decimal QuizPercentage { get; set; }
 
@@ -111,9 +111,9 @@ public class QuizAttemptHistoryViewModel
 
     public DateTime AttemptDate { get; set; }
 
-    public int ObtainedMarks { get; set; }
+    public decimal ObtainedMarks { get; set; }
 
-    public int TotalMarks { get; set; }
+    public decimal TotalMarks { get; set; }
 
     public decimal QuizPercentage { get; set; }
 }
@@ -128,9 +128,9 @@ public class QuizAttemptReviewViewModel
 
     public string StudentName { get; set; } = string.Empty;
 
-    public int TotalMarks { get; set; }
+    public decimal TotalMarks { get; set; }
 
-    public int ObtainedMarks { get; set; }
+    public decimal ObtainedMarks { get; set; }
 
     public decimal QuizPercentage { get; set; }
 
@@ -149,9 +149,9 @@ public class QuizAttemptReviewQuestionViewModel
 
     public string QuestionStatement { get; set; } = string.Empty;
 
-    public int Score { get; set; }
+    public decimal Score { get; set; }
 
-    public int MarksObtained { get; set; }
+    public decimal MarksObtained { get; set; }
 
     public string Status { get; set; } = string.Empty;
 
@@ -181,9 +181,9 @@ public class QuizAttemptDetailsViewModel
 
     public DateTime AttemptDate { get; set; }
 
-    public int TotalMarks { get; set; }
+    public decimal TotalMarks { get; set; }
 
-    public int ObtainedMarks { get; set; }
+    public decimal ObtainedMarks { get; set; }
 
     public decimal QuizPercentage { get; set; }
 
@@ -194,7 +194,7 @@ public class QuizAttemptDetailsQuestionViewModel
 {
     public string QuestionStatement { get; set; } = string.Empty;
 
-    public int Score { get; set; }
+    public decimal Score { get; set; }
 
     public List<QuizAttemptDetailsChoiceViewModel> Choices { get; set; } = [];
 }

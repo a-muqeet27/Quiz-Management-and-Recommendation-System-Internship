@@ -82,7 +82,7 @@ namespace quizportal.Controllers
                 _context.Topics.Add(topic);
                 await _context.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = $"Topic \"{topic.TopicName}\" created successfully.";
+                TempData["SuccessMessage"] = $"Topic \"{topic.TopicName}\" Created Successfully.";
                 return RedirectToAction(nameof(Create), new { subjectId = topic.SubjectId });
             }
 

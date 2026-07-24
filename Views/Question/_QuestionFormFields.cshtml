@@ -78,7 +78,7 @@
 
             <div class="col-md-4">
                 <label asp-for="Score" class="form-label fw-semibold">Score</label>
-                <input asp-for="Score" type="number" min="1" max="100" class="form-control" required />
+                <input asp-for="Score" type="number" min="0.01" max="100" step="0.01" class="form-control" required />
                 <span asp-validation-for="Score" class="text-danger"></span>
             </div>
 

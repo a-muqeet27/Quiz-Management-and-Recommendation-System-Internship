@@ -53,8 +53,8 @@
     @if (!Model.Any())
     {
         <div class="card shadow-sm text-center p-5">
-            <h4>No quizzes yet</h4>
-            <p class="text-muted">Create subjects and questions first, then build your first quiz.</p>
+            <h4>No Quizzes Yet</h4>
+            <p class="text-muted">Build your First Quiz.</p>
             <a asp-action="Create" class="btn btn-primary">Create Quiz</a>
         </div>
     }
@@ -97,6 +97,7 @@
                             </td>
                             <td>
                                 <a asp-action="GeneratedQuestions" asp-route-id="@quiz.QuizId" class="btn btn-primary btn-sm">Questions</a>
+                                <a asp-action="Assignments" asp-route-id="@quiz.QuizId" class="btn btn-success btn-sm">Assignments</a>
                                 <a asp-action="Details" asp-route-id="@quiz.QuizId" class="btn btn-info btn-sm">Details</a>
                                 <a asp-action="Edit" asp-route-id="@quiz.QuizId" class="btn btn-warning btn-sm">Edit</a>
                                 <a asp-action="Delete" asp-route-id="@quiz.QuizId" class="btn btn-danger btn-sm">Delete</a>

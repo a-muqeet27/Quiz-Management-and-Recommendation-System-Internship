@@ -40,6 +40,8 @@ public partial class ApplicationDbContext : DbContext
 
     public virtual DbSet<UserFavouriteQuestion> UserFavouriteQuestions { get; set; }
 
+    public virtual DbSet<QuizSetAssignment> QuizSetAssignments { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Choice>(entity =>
@@ -137,6 +139,7 @@ public partial class ApplicationDbContext : DbContext
 
             entity.Property(e => e.CreatedDate).HasDefaultValueSql("(getutcdate())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.Score).HasColumnType("decimal(10, 2)");
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.Questions)
                 .HasForeignKey(d => d.CreatedBy)
@@ -163,6 +166,7 @@ public partial class ApplicationDbContext : DbContext
             entity.Property(e => e.CreatedDate).HasDefaultValueSql("(getutcdate())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.Title).HasMaxLength(200);
+            entity.Property(e => e.TotalMarks).HasColumnType("decimal(10, 2)");
 
             entity.HasOne(d => d.CreatedByNavigation).WithMany(p => p.Quizzes)
                 .HasForeignKey(d => d.CreatedBy)
@@ -220,6 +224,8 @@ public partial class ApplicationDbContext : DbContext
 
             entity.HasIndex(e => e.QuizAttemptId, "IX_QuizChoice_QuizAttemptId");
 
+            entity.Property(e => e.MarksObtained).HasColumnType("decimal(10, 2)");
+
             entity.HasOne(d => d.Choice).WithMany(p => p.QuizChoices)
                 .HasForeignKey(d => d.ChoiceId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -264,6 +270,8 @@ public partial class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.QuizAttemptId, "IX_QuizScore_QuizAttemptId");
 
             entity.Property(e => e.QuizPercentage).HasColumnType("decimal(5, 2)");
+            entity.Property(e => e.TotalMarks).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.ObtainedMarks).HasColumnType("decimal(10, 2)");
 
             entity.HasOne(d => d.QuizAttempt).WithMany(p => p.QuizScores)
                 .HasForeignKey(d => d.QuizAttemptId)
@@ -340,6 +348,38 @@ public partial class ApplicationDbContext : DbContext
                 .HasForeignKey(d => d.UserId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_UserFavouriteQuestion_User");
+        });
+
+        modelBuilder.Entity<QuizSetAssignment>(entity =>
+        {
+            entity.HasKey(e => e.QuizSetAssignmentId);
+
+            entity.ToTable("QuizSetAssignment");
+
+            entity.HasIndex(e => e.ParentQuizId, "IX_QuizSetAssignment_ParentQuizId");
+
+            entity.HasIndex(e => e.QuizId, "UQ_QuizSetAssignment_QuizId").IsUnique();
+
+            entity.HasIndex(e => new { e.ParentQuizId, e.UserId }, "UX_QuizSetAssignment_Parent_User")
+                .IsUnique()
+                .HasFilter("[UserId] IS NOT NULL");
+
+            entity.Property(e => e.AssignedDate).HasDefaultValueSql("(getutcdate())");
+
+            entity.HasOne(d => d.ParentQuiz).WithMany(p => p.QuizSetAssignmentsAsParent)
+                .HasForeignKey(d => d.ParentQuizId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_QuizSetAssignment_ParentQuiz");
+
+            entity.HasOne(d => d.Quiz).WithMany(p => p.QuizSetAssignmentsAsSet)
+                .HasForeignKey(d => d.QuizId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_QuizSetAssignment_Quiz");
+
+            entity.HasOne(d => d.User).WithMany(p => p.QuizSetAssignments)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_QuizSetAssignment_User");
         });
 
         OnModelCreatingPartial(modelBuilder);

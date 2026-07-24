@@ -84,7 +84,7 @@
 
                         <div class="col-md-6">
                             <label asp-for="TotalMarks" class="form-label fw-semibold">Total Marks</label>
-                            <input asp-for="TotalMarks" type="number" min="1" max="1000" class="form-control" id="TotalMarks" required />
+                            <input asp-for="TotalMarks" type="number" min="0.01" max="1000" step="0.01" class="form-control" id="TotalMarks" required />
                             <span asp-validation-for="TotalMarks" class="text-danger"></span>
                         </div>
 

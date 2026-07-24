@@ -54,7 +54,7 @@ namespace quizportal.Controllers
                 _context.Subjects.Add(subject);
                 await _context.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = $"Subject \"{subject.SubjectName}\" created successfully.";
+                TempData["SuccessMessage"] = $"Subject \"{subject.SubjectName}\" Created Successfully.";
                 return RedirectToAction(nameof(Create));
             }
 

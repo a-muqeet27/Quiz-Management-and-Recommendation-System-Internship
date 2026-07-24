@@ -23,7 +23,7 @@
                 <div class="card-body p-4 text-center">
                     <p class="text-muted text-uppercase small mb-2">Your Score</p>
                     <h1 class="display-3 fw-bold text-@scoreClass mb-1">
-                        @Model.ObtainedMarks / @Model.TotalMarks
+                        @Model.ObtainedMarks.ToString("0.##") / @Model.TotalMarks.ToString("0.##")
                     </h1>
                     <p class="fs-4 mb-4">@Model.QuizPercentage.ToString("0.##")%</p>
 

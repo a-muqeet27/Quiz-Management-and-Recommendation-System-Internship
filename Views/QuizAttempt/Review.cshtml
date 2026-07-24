@@ -6,6 +6,7 @@
     string StatusBadgeClass(string status) => status switch
     {
         "Correct" => "bg-success",
+        "Partial" => "bg-warning text-dark",
         "Wrong" => "bg-danger",
         _ => "bg-secondary"
     };
@@ -36,7 +37,7 @@
                     <p class="mb-0 opacity-75">Attempt by @Model.StudentName</p>
                 </div>
                 <div class="text-end">
-                    <div class="fs-3 fw-bold">@Model.ObtainedMarks / @Model.TotalMarks</div>
+                    <div class="fs-3 fw-bold">@Model.ObtainedMarks.ToString("0.##") / @Model.TotalMarks.ToString("0.##")</div>
                     <div>@Model.QuizPercentage.ToString("0.##")%</div>
                 </div>
             </div>
@@ -76,7 +77,7 @@
                     <h5 class="mb-0">Q@(i + 1). @question.QuestionStatement</h5>
                     <div class="text-end">
                         <span class="badge @StatusBadgeClass(question.Status)">@question.Status</span>
-                        <div class="small text-muted mt-1">@question.MarksObtained / @question.Score marks</div>
+                        <div class="small text-muted mt-1">@question.MarksObtained.ToString("0.##") / @question.Score.ToString("0.##") marks</div>
                     </div>
                 </div>
 

@@ -64,7 +64,7 @@ public class StudentQuestionController : Controller
         var model = new QuestionDetailViewModel
         {
             Question = question,
-            ShowCorrectAnswers = false,
+            ShowCorrectAnswers = true,
             Comments = comments,
             NewComment = new CommentInputViewModel { QuestionId = id }
         };

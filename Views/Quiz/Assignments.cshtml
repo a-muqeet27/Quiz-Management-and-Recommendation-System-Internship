@@ -1,0 +1,143 @@
+@model quizportal.Models.ViewModels.QuizSetAssignmentsViewModel
+@{
+    ViewData["Title"] = "Set Assignments";
+}
+
+<div class="container mt-4 mb-5">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
+        <div>
+            <h2 class="mb-1">Quiz Assignments</h2>
+            <p class="text-muted mb-0">
+                Quiz: <strong>@Model.QuizTitle</strong>
+                · @Model.TotalSets set(s)
+                · @Model.TotalStudents active student(s)
+                · @Model.AssignedCount assigned
+            </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <form asp-action="AssignSets" asp-route-id="@Model.ParentQuizId" method="post" class="m-0">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-primary"
+                        onclick="return confirm('This will randomly assign one set to each student (1:1). Existing assignments for this quiz will be replaced. Continue?');">
+                    Assign Quizzes Randomly
+                </button>
+            </form>
+            <a asp-action="GeneratedQuestions" asp-route-id="@Model.ParentQuizId" class="btn btn-outline-secondary">Questions</a>
+            <a asp-action="QuizList" class="btn btn-outline-secondary">Quiz List</a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body p-4">
+            <h5 class="mb-3">Quizzes</h5>
+            <p class="text-muted small mb-3">
+                Each set can be given to at most one student. Extra sets stay <strong>Unassigned</strong>.
+            </p>
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Quiz</th>
+                            <th>Title</th>
+                            <th>Student</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in Model.SetAssignments)
+                        {
+                            <tr>
+                                <td>
+                                    <span class="badge @(row.IsMainSet ? "bg-dark" : "bg-secondary")">Set @row.SetNumber</span>
+                                </td>
+                                <td>
+                                    @row.SetTitle
+                                    @if (row.IsMainSet)
+                                    {
+                                        <small class="text-muted">(main)</small>
+                                    }
+                                </td>
+                                <td>
+                                    @if (row.StudentUserId.HasValue)
+                                    {
+                                        <strong>@row.StudentName</strong>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge @(row.StudentUserId.HasValue ? "bg-success" : "bg-warning text-dark")">
+                                        @row.Status
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-4">
+            <h5 class="mb-3">Students Without Quiz</h5>
+            @if (!Model.UnassignedStudents.Any())
+            {
+                <p class="text-muted mb-0">
+                    @if (Model.SetAssignments.Any(s => s.StudentUserId.HasValue))
+                    {
+                        <text>All Students have been Assigned a Quiz.</text>
+                    }
+                    else
+                    {
+                        <text>No Assignments Yet. Click <strong>Assign Quizzes Randomly</strong> to distribute quizzes.</text>
+                    }
+                </p>
+            }
+            else
+            {
+                <p class="text-muted small mb-3">
+                    These Students do not have a Quiz-Set for this Quiz
+                    (@Model.UnassignedStudents.Count of @Model.TotalStudents).
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Name</th>
+                                <th>Username</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var student in Model.UnassignedStudents)
+                            {
+                                <tr>
+                                    <td>@student.DisplayName</td>
+                                    <td>@student.Username</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

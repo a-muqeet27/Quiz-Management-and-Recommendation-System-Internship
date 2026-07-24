@@ -15,7 +15,7 @@ public partial class Question
 
     public int Difficulty { get; set; }
 
-    public int Score { get; set; }
+    public decimal Score { get; set; }
 
     public bool IsActive { get; set; }
 

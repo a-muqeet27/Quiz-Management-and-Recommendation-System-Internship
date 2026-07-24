@@ -21,11 +21,39 @@ public class QuizAttemptController : Controller
 
     public async Task<IActionResult> Index(int? subjectId = null)
     {
+        var userId = GetCurrentStudentUserId();
+        if (!userId.HasValue)
+            return RedirectToAction("Login", "Account");
+
+        var assignedQuizIds = await _context.QuizSetAssignments
+            .Where(a => a.UserId == userId.Value)
+            .Select(a => a.QuizId)
+            .ToListAsync();
+
+        var parentsWithAssignments = await _context.QuizSetAssignments
+            .Select(a => a.ParentQuizId)
+            .Distinct()
+            .ToListAsync();
+
+        var parentsWithArrangements = await _context.Quizzes
+            .Where(q => q.ParentQuizId != null)
+            .Select(q => q.ParentQuizId!.Value)
+            .Distinct()
+            .ToListAsync();
+
         var query = _context.Quizzes
             .Include(q => q.Subject)
             .Include(q => q.Topic)
             .Include(q => q.QuizQuestions)
             .Where(q => q.IsActive && q.QuizQuestions.Any())
+            .Where(q =>
+                assignedQuizIds.Contains(q.QuizId)
+                || (
+                    // Single-set quizzes (no arrangements) with no assignment rows: open to all students
+                    q.ParentQuizId == null
+                    && !parentsWithArrangements.Contains(q.QuizId)
+                    && !parentsWithAssignments.Contains(q.QuizId)
+                ))
             .AsQueryable();
 
         if (subjectId.HasValue && subjectId > 0)
@@ -34,6 +62,30 @@ public class QuizAttemptController : Controller
         var quizzes = await query
             .OrderBy(q => q.QuizId)
             .ToListAsync();
+
+        // Prefer showing the parent title so students don't see "Set N" labels.
+        var parentIdsNeeded = quizzes
+            .Where(q => q.ParentQuizId.HasValue)
+            .Select(q => q.ParentQuizId!.Value)
+            .Distinct()
+            .ToList();
+
+        if (parentIdsNeeded.Count > 0)
+        {
+            var parentTitles = await _context.Quizzes
+                .AsNoTracking()
+                .Where(q => parentIdsNeeded.Contains(q.QuizId))
+                .ToDictionaryAsync(q => q.QuizId, q => q.Title);
+
+            foreach (var quiz in quizzes.Where(q => q.ParentQuizId.HasValue))
+            {
+                if (parentTitles.TryGetValue(quiz.ParentQuizId!.Value, out var parentTitle)
+                    && !string.IsNullOrWhiteSpace(parentTitle))
+                {
+                    quiz.Title = parentTitle;
+                }
+            }
+        }
 
         await PopulateFilterDropdownsAsync(subjectId);
         ViewBag.RecentAttempts = await LoadRecentAttemptsAsync();
@@ -100,6 +152,13 @@ public class QuizAttemptController : Controller
         if (quiz == null)
             return NotFound();
 
+        var accessError = await EnsureStudentCanAttemptQuizAsync(quiz);
+        if (accessError != null)
+        {
+            TempData["ErrorMessage"] = accessError;
+            return RedirectToAction(nameof(Index));
+        }
+
         if (!quiz.IsActive)
         {
             TempData["ErrorMessage"] = "This quiz is not active.";
@@ -112,10 +171,12 @@ public class QuizAttemptController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        var displayTitle = await GetStudentFacingQuizTitleAsync(quiz);
+
         var model = new QuizAttemptStartViewModel
         {
             QuizId = quiz.QuizId,
-            Title = quiz.Title ?? "Quiz",
+            Title = displayTitle,
             SubjectName = quiz.Subject?.SubjectName,
             QuestionCount = quiz.QuizQuestions.Count,
             TotalMarks = quiz.TotalMarks,
@@ -133,6 +194,13 @@ public class QuizAttemptController : Controller
         var quiz = await LoadQuizForAttemptAsync(model.QuizId);
         if (quiz == null)
             return NotFound();
+
+        var accessError = await EnsureStudentCanAttemptQuizAsync(quiz);
+        if (accessError != null)
+        {
+            TempData["ErrorMessage"] = accessError;
+            return RedirectToAction(nameof(Index));
+        }
 
         if (!quiz.IsActive || !quiz.QuizQuestions.Any())
         {
@@ -243,8 +311,8 @@ public class QuizAttemptController : Controller
         var correctCount = 0;
         var wrongCount = 0;
         var unattemptedCount = 0;
-        var obtainedMarks = 0;
-        var totalMarks = 0;
+        decimal obtainedMarks = 0;
+        decimal totalMarks = 0;
 
         foreach (var quizQuestion in quizQuestions)
         {
@@ -257,26 +325,26 @@ public class QuizAttemptController : Controller
             var correctChoiceIds = question.Choices
                 .Where(c => c.IsCorrect)
                 .Select(c => c.ChoiceId)
-                .OrderBy(id => id)
-                .ToList();
+                .ToHashSet();
 
-            var selectedSorted = selectedChoiceIds.OrderBy(id => id).ToList();
-            var isAttempted = selectedSorted.Count > 0;
-            var isCorrect = isAttempted && selectedSorted.SequenceEqual(correctChoiceIds);
+            var selectedSet = selectedChoiceIds.ToHashSet();
+            var isAttempted = selectedSet.Count > 0;
+            var questionMarks = CalculateQuestionMarks(question, selectedSet, correctChoiceIds);
+            var isFullyCorrect = isAttempted && questionMarks == question.Score;
 
             if (!isAttempted)
                 unattemptedCount++;
-            else if (isCorrect)
+            else if (isFullyCorrect)
                 correctCount++;
             else
                 wrongCount++;
 
-            var questionMarks = isCorrect ? question.Score : 0;
             obtainedMarks += questionMarks;
 
+            var marksAssigned = false;
             foreach (var choice in question.Choices)
             {
-                var isSelected = selectedChoiceIds.Contains(choice.ChoiceId);
+                var isSelected = selectedSet.Contains(choice.ChoiceId);
                 _context.QuizChoices.Add(new QuizChoice
                 {
                     QuizAttemptId = attempt.QuizAttemptId,
@@ -284,13 +352,15 @@ public class QuizAttemptController : Controller
                     ChoiceId = choice.ChoiceId,
                     IsSelected = isSelected,
                     IsCorrect = choice.IsCorrect,
-                    MarksObtained = isSelected && choice.IsCorrect && isCorrect ? question.Score : 0
+                    // Store question total on one row so review can use Max(MarksObtained).
+                    MarksObtained = !marksAssigned ? questionMarks : 0
                 });
+                marksAssigned = true;
             }
         }
 
         var percentage = totalMarks > 0
-            ? Math.Round((decimal)obtainedMarks / totalMarks * 100, 2)
+            ? Math.Round(obtainedMarks / totalMarks * 100, 2)
             : 0;
 
         attempt.CompletedAt = DateTime.UtcNow;
@@ -415,22 +485,22 @@ public class QuizAttemptController : Controller
                 .OrderBy(x => x)
                 .ToList();
 
-            var correctIds = questionChoices
-                .Where(c => c.IsCorrect)
-                .Select(c => c.ChoiceId)
-                .OrderBy(x => x)
-                .ToList();
+            var marksObtained = questionChoices.Count == 0
+                ? 0
+                : questionChoices.Max(c => c.MarksObtained);
 
             var status = selectedIds.Count == 0
                 ? "Unattempted"
-                : selectedIds.SequenceEqual(correctIds) ? "Correct" : "Wrong";
+                : marksObtained >= qq.Question.Score ? "Correct"
+                : marksObtained > 0 ? "Partial"
+                : "Wrong";
 
             return new QuizAttemptReviewQuestionViewModel
             {
                 QuestionId = qq.QuestionId,
                 QuestionStatement = qq.Question.QuestionStatement,
                 Score = qq.Question.Score,
-                MarksObtained = questionChoices.Max(c => c.MarksObtained),
+                MarksObtained = marksObtained,
                 Status = status,
                 Choices = questionChoices.Select(c => new QuizAttemptReviewChoiceViewModel
                 {
@@ -495,6 +565,72 @@ public class QuizAttemptController : Controller
             .Include(q => q.Subject)
             .Include(q => q.QuizQuestions)
             .FirstOrDefaultAsync(q => q.QuizId == quizId);
+    }
+
+    private static decimal CalculateQuestionMarks(
+        Question question,
+        HashSet<int> selectedChoiceIds,
+        HashSet<int> correctChoiceIds)
+    {
+        if (selectedChoiceIds.Count == 0)
+            return 0;
+
+        // Single-correct: all-or-nothing
+        if (question.QuestionType == 1)
+            return selectedChoiceIds.SetEquals(correctChoiceIds) ? question.Score : 0;
+
+        // Multiple-correct: start from full score, then deduct
+        // 0.5 per wrong selection, 0.75 per missed correct option
+        var wrongSelections = selectedChoiceIds.Count(id => !correctChoiceIds.Contains(id));
+        var missedCorrect = correctChoiceIds.Count(id => !selectedChoiceIds.Contains(id));
+        var marks = question.Score - (wrongSelections * 0.5m) - (missedCorrect * 0.75m);
+        return Math.Max(0, Math.Round(marks, 2));
+    }
+
+    private async Task<string?> EnsureStudentCanAttemptQuizAsync(Quiz quiz)
+    {
+        var userId = GetCurrentStudentUserId();
+        if (!userId.HasValue)
+            return "Please sign in to attempt a quiz.";
+
+        var parentId = quiz.ParentQuizId ?? quiz.QuizId;
+        var familyHasAssignments = await _context.QuizSetAssignments
+            .AnyAsync(a => a.ParentQuizId == parentId);
+
+        if (familyHasAssignments)
+        {
+            var isAssigned = await _context.QuizSetAssignments
+                .AnyAsync(a => a.QuizId == quiz.QuizId && a.UserId == userId.Value);
+
+            return isAssigned
+                ? null
+                : "You are not assigned to this quiz set.";
+        }
+
+        // Multi-set quizzes must be assigned by the teacher before students can attempt them.
+        var hasArrangements = await _context.Quizzes.AnyAsync(q => q.ParentQuizId == parentId);
+        if (hasArrangements)
+            return "This quiz has multiple sets. Ask your teacher to assign a set to you.";
+
+        // Single-set quiz with no assignment rows: only the main quiz is attemptable.
+        if (quiz.ParentQuizId.HasValue)
+            return "This quiz set is not available.";
+
+        return null;
+    }
+
+    private async Task<string> GetStudentFacingQuizTitleAsync(Quiz quiz)
+    {
+        if (!quiz.ParentQuizId.HasValue)
+            return quiz.Title ?? "Quiz";
+
+        var parentTitle = await _context.Quizzes
+            .AsNoTracking()
+            .Where(q => q.QuizId == quiz.ParentQuizId.Value)
+            .Select(q => q.Title)
+            .FirstOrDefaultAsync();
+
+        return string.IsNullOrWhiteSpace(parentTitle) ? (quiz.Title ?? "Quiz") : parentTitle;
     }
 
     private static int GetPerformanceStatus(decimal percentage) => percentage switch

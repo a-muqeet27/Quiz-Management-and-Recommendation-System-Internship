@@ -15,7 +15,7 @@ public partial class Quiz
 
     public int TimeLimitMinutes { get; set; }
 
-    public int TotalMarks { get; set; }
+    public decimal TotalMarks { get; set; }
 
     public int? DifficultyFilter { get; set; }
 
@@ -44,6 +44,10 @@ public partial class Quiz
     public virtual ICollection<QuizAttempt> QuizAttempts { get; set; } = new List<QuizAttempt>();
 
     public virtual ICollection<QuizQuestion> QuizQuestions { get; set; } = new List<QuizQuestion>();
+
+    public virtual ICollection<QuizSetAssignment> QuizSetAssignmentsAsParent { get; set; } = new List<QuizSetAssignment>();
+
+    public virtual ICollection<QuizSetAssignment> QuizSetAssignmentsAsSet { get; set; } = new List<QuizSetAssignment>();
 
     public virtual Subject Subject { get; set; } = null!;
 
